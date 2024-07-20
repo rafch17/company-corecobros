@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-07-14T16:40:26-0500",
+    date = "2024-07-20T01:34:45-0500",
     comments = "version: 1.5.5.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.8.jar, environment: Java 21.0.3 (Eclipse Adoptium)"
 )
 @Component
@@ -22,24 +22,24 @@ public class UserMapperImpl implements UserMapper {
             return null;
         }
 
-        UserDTO userDTO = new UserDTO();
+        UserDTO.UserDTOBuilder userDTO = UserDTO.builder();
 
-        userDTO.setId( user.getId() );
-        userDTO.setCompanyId( user.getCompanyId() );
-        userDTO.setUser( user.getUser() );
-        userDTO.setPassword( user.getPassword() );
+        userDTO.id( user.getId() );
+        userDTO.companyId( user.getCompanyId() );
+        userDTO.user( user.getUser() );
+        userDTO.password( user.getPassword() );
         if ( user.getCreateDate() != null ) {
-            userDTO.setCreateDate( DateTimeFormatter.ISO_LOCAL_DATE.format( user.getCreateDate() ) );
+            userDTO.createDate( DateTimeFormatter.ISO_LOCAL_DATE.format( user.getCreateDate() ) );
         }
-        userDTO.setRole( user.getRole() );
-        userDTO.setStatus( user.getStatus() );
+        userDTO.role( user.getRole() );
+        userDTO.status( user.getStatus() );
         if ( user.getLastConnection() != null ) {
-            userDTO.setLastConnection( DateTimeFormatter.ISO_LOCAL_DATE_TIME.format( user.getLastConnection() ) );
+            userDTO.lastConnection( DateTimeFormatter.ISO_LOCAL_DATE_TIME.format( user.getLastConnection() ) );
         }
-        userDTO.setFailedAttempt( user.getFailedAttempt() );
-        userDTO.setUserType( user.getUserType() );
+        userDTO.failedAttempt( user.getFailedAttempt() );
+        userDTO.userType( user.getUserType() );
 
-        return userDTO;
+        return userDTO.build();
     }
 
     @Override
