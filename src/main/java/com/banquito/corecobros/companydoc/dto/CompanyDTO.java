@@ -8,6 +8,7 @@ import lombok.Value;
 public class CompanyDTO {
 
     private String id;
+    private String uniqueID;
     private String ruc;
     private String companyName;
     private String status;

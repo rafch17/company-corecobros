@@ -28,15 +28,25 @@ public class User {
     private String id;
     @Indexed
     private String companyId;
+    @Indexed(unique = true)
+    private String uniqueID;
+    private String firstName;
+    private String lastName;
     @Indexed
     private String user;
     private String password;
+    private String resetCode;
     private LocalDate createDate;
+    @Indexed
+    private String email;
     private String role;
     private String status;
     private LocalDateTime lastConnection;
     private int failedAttempt;
     private String userType;
+    private boolean isFirstLogin;
+    private String oldPassword;
+    private String newPassword;
 
     @Override
     public int hashCode() {

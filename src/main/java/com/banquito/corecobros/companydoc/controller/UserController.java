@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banquito.corecobros.companydoc.dto.PasswordDTO;
@@ -27,56 +28,84 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
-        return ResponseEntity.ok(this.service.obtainAllUsers());
+        List<UserDTO> users = this.service.obtainAllUsers();
+        return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
-        UserDTO user = this.service.getUserById(id);
-        return ResponseEntity.ok(user);
+    @GetMapping("/unique/{uniqueID}")
+    public ResponseEntity<UserDTO> getUserByUniqueID(@PathVariable String uniqueID) {
+        UserDTO user = service.getUserByUniqueID(uniqueID);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    @PostMapping
-    public ResponseEntity<Void> createUser(@RequestBody UserDTO dto) {
-        this.service.create(dto);
-        return ResponseEntity.ok().build();
+    @PostMapping("/create")
+    public ResponseEntity<Void> createUser(@RequestParam String firstName, @RequestParam String lastName,
+            @RequestParam String email) {
+        try {
+            service.createUser(firstName, lastName, email);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateUser(@PathVariable String id, @RequestBody UserDTO dto) {
-        this.service.updateUser(id, dto);
-        return ResponseEntity.ok().build();
+        try {
+            this.service.updateUser(id, dto);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @PutMapping("/login")
+    @GetMapping("/company/{companyId}")
+    public ResponseEntity<List<UserDTO>> getUsersByCompanyId(@PathVariable String companyId) {
+        List<UserDTO> users = service.getUsersByCompanyId(companyId);
+        return ResponseEntity.ok(users);
+    }
+
+    @PostMapping("/login")
     public ResponseEntity<UserDTO> login(@RequestBody PasswordDTO dto) {
         try {
-            return ResponseEntity.ok(this.service.login(dto));
-        } catch (RuntimeException rte) {
-            rte.printStackTrace();
+            UserDTO user = this.service.login(dto);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @PutMapping("/changePassword")
+    @PutMapping("/change-password")
     public ResponseEntity<Void> changePassword(@RequestBody PasswordDTO dto) {
-        System.out.println("Va a Cambiar clave para: " + dto.toString());
         try {
             this.service.changePassword(dto);
             return ResponseEntity.ok().build();
-        } catch (RuntimeException rte) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @PutMapping("/generatePassword/{user}")
-    public ResponseEntity<Void> generatePassword(@PathVariable("user") String user) {
-        System.out.println("Va a generar clave para: " + user);
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestParam String userName, @RequestParam String email) {
         try {
-            this.service.generatePassword(user);
+            this.service.resetPassword(userName, email);
             return ResponseEntity.ok().build();
-        } catch (RuntimeException rte) {
-            return ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/validate-code")
+    public ResponseEntity<Boolean> validateResetCode(@RequestParam String userName, @RequestParam String resetCode) {
+        try {
+            boolean isValid = service.validateResetCode(userName, resetCode);
+            return ResponseEntity.ok(isValid);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 

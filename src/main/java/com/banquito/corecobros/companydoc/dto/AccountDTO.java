@@ -9,8 +9,8 @@ public class AccountDTO {
 
     private String id;
     private String companyId;
-    private String codeUniqueAccount;
-    private String number;
+    private String uniqueID;
+    private String codeInternalAccount;
     private String type;
     private String status;
 

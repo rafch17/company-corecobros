@@ -12,4 +12,6 @@ public interface CompanyRepository extends MongoRepository<Company, String> {
 
     List<Company> findByCompanyName(String companyName);
 
+    Company findByUniqueID(String uniqueID);
+
 }

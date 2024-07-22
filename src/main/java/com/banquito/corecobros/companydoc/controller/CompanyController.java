@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banquito.corecobros.companydoc.dto.CompanyDTO;
+import com.banquito.corecobros.companydoc.model.Company;
 import com.banquito.corecobros.companydoc.service.CompanyService;
 
 @RestController
@@ -30,10 +31,24 @@ public class CompanyController {
         return ResponseEntity.ok(this.service.obtainAllCompanies());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CompanyDTO> getCompanyById(@PathVariable String id) {
-        CompanyDTO company = this.service.getCompanyById(id);
-        return ResponseEntity.ok(company);
+    @GetMapping("/unique/{uniqueID}")
+    public ResponseEntity<CompanyDTO> getCompanyByUniqueID(@PathVariable String uniqueID) {
+        CompanyDTO company = service.getCompanyByUniqueID(uniqueID);
+        if (company != null) {
+            return ResponseEntity.ok(company);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/ruc/{ruc}")
+    public ResponseEntity<Company> getCompanyByRuc(@PathVariable String ruc) {
+        try {
+            Company company = service.getCompanyByRuc(ruc);
+            return ResponseEntity.ok(company);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping
@@ -48,9 +63,14 @@ public class CompanyController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/register")
+    @GetMapping("/register")
     public ResponseEntity<CompanyDTO> registerCompany(@RequestParam String ruc, @RequestParam String accountNumber) {
-        return ResponseEntity.ok(service.registerCompany(ruc, accountNumber));
+        try {
+            CompanyDTO company = this.service.registerCompany(ruc, accountNumber);
+            return ResponseEntity.ok(company);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 }

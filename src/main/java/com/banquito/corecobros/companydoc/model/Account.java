@@ -17,7 +17,7 @@ import lombok.ToString;
 @ToString
 @Document(collection = "accounts")
 @CompoundIndexes({
-    @CompoundIndex(name = "accidx_code_unique_company", def = "{'codeUniqueAccount': 1, 'companyId': 1}", unique = true)
+        @CompoundIndex(name = "accidx_code_unique_company", def = "{'uniqueID': 1, 'companyId': 1}", unique = true)
 })
 public class Account {
 
@@ -25,9 +25,9 @@ public class Account {
     private String id;
     @Indexed
     private String companyId;
-    @Indexed
-    private String codeUniqueAccount;
-    private String number;
+    @Indexed(unique = true)
+    private String uniqueID;
+    private String codeInternalAccount;
     private String type;
     private String status;
 

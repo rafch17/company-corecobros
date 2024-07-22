@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-07-20T01:34:45-0500",
+    date = "2024-07-22T12:51:27-0500",
     comments = "version: 1.5.5.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.8.jar, environment: Java 21.0.3 (Eclipse Adoptium)"
 )
 @Component
@@ -23,8 +23,8 @@ public class AccountMapperImpl implements AccountMapper {
 
         accountDTO.id( account.getId() );
         accountDTO.companyId( account.getCompanyId() );
-        accountDTO.codeUniqueAccount( account.getCodeUniqueAccount() );
-        accountDTO.number( account.getNumber() );
+        accountDTO.uniqueID( account.getUniqueID() );
+        accountDTO.codeInternalAccount( account.getCodeInternalAccount() );
         accountDTO.type( account.getType() );
         accountDTO.status( account.getStatus() );
 
@@ -41,8 +41,8 @@ public class AccountMapperImpl implements AccountMapper {
 
         account.setId( accountDTO.getId() );
         account.setCompanyId( accountDTO.getCompanyId() );
-        account.setCodeUniqueAccount( accountDTO.getCodeUniqueAccount() );
-        account.setNumber( accountDTO.getNumber() );
+        account.setUniqueID( accountDTO.getUniqueID() );
+        account.setCodeInternalAccount( accountDTO.getCodeInternalAccount() );
         account.setType( accountDTO.getType() );
         account.setStatus( accountDTO.getStatus() );
 

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banquito.corecobros.companydoc.dto.AccountDTO;
@@ -29,10 +30,20 @@ public class AccountController {
         return ResponseEntity.ok(this.service.obtainAllAccounts());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<AccountDTO> getAccountById(@PathVariable String id) {
-        AccountDTO account = this.service.getAccountById(id);
-        return ResponseEntity.ok(account);
+    @GetMapping("/unique/{uniqueID}")
+    public ResponseEntity<AccountDTO> getAccountByUniqueID(@PathVariable String uniqueID) {
+        AccountDTO account = service.getAccountByUniqueID(uniqueID);
+        if (account != null) {
+            return ResponseEntity.ok(account);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/uniqueIDs")
+    public ResponseEntity<List<AccountDTO>> getAccountsByUniqueIDs(@RequestParam List<String> uniqueIDs) {
+        List<AccountDTO> accounts = service.getAccountsByUniqueIDs(uniqueIDs);
+        return ResponseEntity.ok(accounts);
     }
 
     @PostMapping
@@ -51,12 +62,6 @@ public class AccountController {
     public ResponseEntity<List<AccountDTO>> getAccountsByCompanyId(@PathVariable String companyId) {
         List<AccountDTO> accounts = this.service.getAccountsByCompanyId(companyId);
         return ResponseEntity.ok(accounts);
-    }
-
-    @GetMapping("/number/{number}")
-    public ResponseEntity<AccountDTO> getAccountByNumber(@PathVariable String number) {
-        AccountDTO account = this.service.getAccountByNumber(number);
-        return ResponseEntity.ok(account);
     }
 
 }

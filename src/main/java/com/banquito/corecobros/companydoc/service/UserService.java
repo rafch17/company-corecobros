@@ -1,16 +1,19 @@
 package com.banquito.corecobros.companydoc.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.banquito.corecobros.companydoc.dto.PasswordDTO;
 import com.banquito.corecobros.companydoc.dto.UserDTO;
+import com.banquito.corecobros.companydoc.model.Company;
 import com.banquito.corecobros.companydoc.model.User;
+import com.banquito.corecobros.companydoc.repository.CompanyRepository;
 import com.banquito.corecobros.companydoc.repository.UserRepository;
 import com.banquito.corecobros.companydoc.util.mapper.UserMapper;
 
@@ -19,6 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class UserService {
+
+    @Autowired
+    private CompanyRepository companyRepository;
 
     private final UserRepository userRepository;
     private final UserMapper mapper;
@@ -35,11 +41,11 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public UserDTO getUserById(String id) {
-        log.info("Va a buscar el usuario con ID: {}", id);
-        User user = this.userRepository.findById(id).orElse(null);
+    public UserDTO getUserByUniqueID(String uniqueID) {
+        log.info("Va a buscar el usuario con uniqueID: {}", uniqueID);
+        User user = this.userRepository.findByUniqueID(uniqueID);
         if (user == null) {
-            log.info("No se encontró el usuario con ID: {}", id);
+            log.info("No se encontró el usuario con uniqueID: {}", uniqueID);
             return null;
         }
         log.info("Se encontró el usuario: {}", user);
@@ -55,19 +61,23 @@ public class UserService {
         }
     }
 
-    public void create(UserDTO dto) {
-        if (this.userRepository.findByUser(dto.getUser()) != null) {
-            throw new RuntimeException("usuario repetido");
+    public void createUser(String firstName, String lastName, String email) {
+        String userName = firstName.substring(0, 1).toUpperCase() + lastName.toUpperCase();
+        String password = generateRandomPassword();
+        String md5Password = DigestUtils.md5Hex(password);
+        if (this.userRepository.findByUser(userName) != null) {
+            throw new RuntimeException("El nombre de usuario ya existe.");
         }
-        log.info("Va a registrar un usuario: {}", dto);
-        User user = this.mapper.toPersistence(dto);
-        user.setStatus("BLO");
-        user.setCreateDate(LocalDate.now());
-        String rawPassword = "CambiarClave1";
-        user.setPassword(DigestUtils.md5Hex(rawPassword));
-        log.info("Usuario a registrar: {}", user);
-        user = this.userRepository.save(user);
-        log.info("Se creó el usuario: {}", user);
+        User user = new User();
+        user.setUser(userName);
+        user.setPassword(md5Password);
+        user.setEmail(email);
+        this.userRepository.save(user);
+        log.info("Usuario creado con nombre de usuario: {}, contraseña: {}", userName, password);
+    }
+
+    private String generateRandomPassword() {
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 
     public void updateUser(String id, UserDTO dto) {
@@ -76,6 +86,12 @@ public class UserService {
         user.setId(id);
         user = this.userRepository.save(user);
         log.info("Se actualizó el usuario: {}", user);
+    }
+
+    public List<UserDTO> getUsersByCompanyId(String companyId) {
+        log.info("Va a retornar todos los usuarios para la compañía con ID: {}", companyId);
+        List<User> users = this.userRepository.findByCompanyId(companyId);
+        return users.stream().map(u -> this.mapper.toDTO(u)).collect(Collectors.toList());
     }
 
     public UserDTO login(PasswordDTO dto) {
@@ -97,25 +113,47 @@ public class UserService {
         throw new RuntimeException(errorMessage);
     }
 
-    public void changePassword(PasswordDTO userPassword) {
-        User user = this.userRepository.findByUser(userPassword.getUser());
+    public void changePassword(PasswordDTO passwordDTO) {
+        User user = this.userRepository.findByUser(passwordDTO.getUser());
         if (user == null) {
-            throw new RuntimeException("No existe el usuario: " + userPassword.getUser());
+            throw new RuntimeException("Usuario no encontrado.");
         }
-        user.setPassword(userPassword.getPassword());
+        if (!user.getPassword().equals(DigestUtils.md5Hex(passwordDTO.getOldPassword()))) {
+            throw new RuntimeException("Contraseña actual incorrecta.");
+        }
+        user.setPassword(DigestUtils.md5Hex(passwordDTO.getNewPassword()));
         this.userRepository.save(user);
+        Company company = this.companyRepository.findById(user.getCompanyId()).orElse(null);
+        if (company != null) {
+            log.info("Nombre de la empresa asociada al usuario: {}", company.getCompanyName());
+        }
     }
 
-    public void generatePassword(String userName) {
+    public void resetPassword(String userName, String email) {
         User user = this.userRepository.findByUser(userName);
         if (user == null) {
-            throw new RuntimeException("No existe el usuario: " + userName);
+            throw new RuntimeException("Usuario no encontrado.");
         }
-        // TODO: Generate password
-        String password = "GenerarClave2";
-        String md5Hex = DigestUtils.md5Hex(password);
-        user.setPassword(md5Hex);
+        if (!user.getEmail().equals(email)) {
+            log.error("El correo electrónico no coincide para el usuario: {}", userName);
+            throw new RuntimeException("Correo electrónico incorrecto.");
+        }
+        String resetCode = generate6DigitCode();
+        user.setResetCode(resetCode);
         this.userRepository.save(user);
+        log.info("Código de restablecimiento generado para el usuario {}: {}", userName, resetCode);
+    }
+
+    private String generate6DigitCode() {
+        return String.format("%06d", (int) (Math.random() * 1000000));
+    }
+
+    public boolean validateResetCode(String userName, String resetCode) {
+        User user = this.userRepository.findByUser(userName);
+        if (user == null || !resetCode.equals(user.getResetCode())) {
+            throw new RuntimeException("Código de restablecimiento inválido.");
+        }
+        return true;
     }
 
 }

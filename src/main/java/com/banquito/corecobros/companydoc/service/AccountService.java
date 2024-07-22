@@ -31,31 +31,15 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
-    public void create(AccountDTO dto) {
-        log.info("Va a registrar una cuenta: {}", dto);
-        Account account = this.mapper.toPersistence(dto);
-        log.info("Cuenta a registrar: {}", account);
-        account = this.accountRepository.save(account);
-        log.info("Se creó la cuenta: {}", account);
-    }
-
-    public AccountDTO getAccountById(String id) {
-        log.info("Va a buscar la cuenta con ID: {}", id);
-        Account account = this.accountRepository.findById(id).orElse(null);
+    public AccountDTO getAccountByUniqueID(String uniqueID) {
+        log.info("Va a buscar la cuenta con uniqueID: {}", uniqueID);
+        Account account = this.accountRepository.findByUniqueID(uniqueID);
         if (account == null) {
-            log.info("No se encontró la cuenta con ID: {}", id);
+            log.info("No se encontró la cuenta con uniqueID: {}", uniqueID);
             return null;
         }
         log.info("Se encontró la cuenta: {}", account);
         return this.mapper.toDTO(account);
-    }
-
-    public void updateAccount(String id, AccountDTO dto) {
-        log.info("Va a actualizar la cuenta con ID: {}", id);
-        Account account = this.mapper.toPersistence(dto);
-        account.setId(id);
-        account = this.accountRepository.save(account);
-        log.info("Se actualizó la cuenta: {}", account);
     }
 
     public List<AccountDTO> getAccountsByCompanyId(String companyId) {
@@ -64,14 +48,25 @@ public class AccountService {
         return accounts.stream().map(a -> this.mapper.toDTO(a)).collect(Collectors.toList());
     }
 
-    public AccountDTO getAccountByNumber(String number) {
-        log.info("Va a buscar la cuenta con número: {}", number);
-        Account account = this.accountRepository.findByNumber(number);
-        if (account == null) {
-            log.info("No se encontró la cuenta con número: {}", number);
-            return null;
-        }
-        log.info("Se encontró la cuenta: {}", account);
-        return this.mapper.toDTO(account);
+    public List<AccountDTO> getAccountsByUniqueIDs(List<String> uniqueIDs) {
+        log.info("Va a buscar cuentas con los uniqueIDs: {}", uniqueIDs);
+        List<Account> accounts = this.accountRepository.findByUniqueIDIn(uniqueIDs);
+        return accounts.stream().map(this.mapper::toDTO).collect(Collectors.toList());
+    }
+
+    public void create(AccountDTO dto) {
+        log.info("Va a registrar una cuenta: {}", dto);
+        Account account = this.mapper.toPersistence(dto);
+        log.info("Cuenta a registrar: {}", account);
+        account = this.accountRepository.save(account);
+        log.info("Se creó la cuenta: {}", account);
+    }
+
+    public void updateAccount(String id, AccountDTO dto) {
+        log.info("Va a actualizar la cuenta con ID: {}", id);
+        Account account = this.mapper.toPersistence(dto);
+        account.setId(id);
+        account = this.accountRepository.save(account);
+        log.info("Se actualizó la cuenta: {}", account);
     }
 }
