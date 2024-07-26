@@ -62,6 +62,35 @@ public class CompanyService {
         }
     }
 
+    public List<CompanyDTO> getCompanyByCompanyName(String companyName) {
+        log.info("Va a buscar las compañías con nombre: {}", companyName);
+        List<Company> companies = this.companyRepository.findByCompanyName(companyName);
+        return companies.stream().map(c -> this.companyMapper.toDTO(c))
+                .collect(Collectors.toList());
+    }
+
+    public CompanyDTO getCommissionIdByCompanyId(String uniqueID) {
+        log.info("Va a buscar la comisión de la compañía con ID: {}", uniqueID);
+        Company company = this.companyRepository.findByUniqueID(uniqueID);
+        if (company != null) {
+            log.info("Se encontró la compañía: {}", company);
+            if (company.getCommissionId() != null) {
+                Company commission = this.companyRepository.findByUniqueID(company.getCommissionId());
+                if (commission != null) {
+                    log.info("Se encontró la comisión: {}", commission);
+                    return this.companyMapper.toDTO(commission);
+                } else {
+                    throw new RuntimeException(
+                            "No existe la comisión para la empresa con ID: " + company.getCommissionId());
+                }
+            } else {
+                throw new RuntimeException("La empresa con ID " + uniqueID + " no tiene una comisión asociada.");
+            }
+        } else {
+            throw new RuntimeException("No existe la empresa con ID: " + uniqueID);
+        }
+    }
+
     public void create(CompanyDTO dto) {
         log.info("Va a registrar una compañía: {}", dto);
         Company company = this.companyMapper.toPersistence(dto);
@@ -70,10 +99,10 @@ public class CompanyService {
         log.info("Se creó la compañía: {}", company);
     }
 
-    public void updateCompany(String id, CompanyDTO dto) {
-        log.info("Va a actualizar la compañía con ID: {}", id);
+    public void updateCompany(String uniqueID, CompanyDTO dto) {
+        log.info("Va a actualizar la compañía con ID: {}", uniqueID);
         Company company = this.companyMapper.toPersistence(dto);
-        company.setId(id);
+        company.setId(uniqueID);
         company = this.companyRepository.save(company);
         log.info("Se actualizó la compañía: {}", company);
     }

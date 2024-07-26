@@ -56,10 +56,10 @@ public class ServiceeService {
         log.info("Se creó el servicio: {}", service);
     }
 
-    public void updateService(String id, ServiceeDTO dto) {
-        log.info("Va a actualizar el servicio con ID: {}", id);
+    public void updateService(String uniqueID, ServiceeDTO dto) {
+        log.info("Va a actualizar el servicio con ID: {}", uniqueID);
         Servicee service = mapper.toPersistence(dto);
-        service.setId(id);
+        service.setId(uniqueID);
         service = this.serviceeRepository.save(service);
         log.info("Se actualizó el servicio: {}", service);
     }

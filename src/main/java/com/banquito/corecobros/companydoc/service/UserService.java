@@ -61,7 +61,21 @@ public class UserService {
         }
     }
 
-    public void createUser(String firstName, String lastName, String email) {
+    public String getCompanyNameByUser(String user) {
+        log.info("Va a buscar la empresa para el usuario: {}", user);
+        User userEntity = this.userRepository.findByUser(user);
+        if (userEntity == null) {
+            throw new RuntimeException("No se encontró el usuario con user: " + user);
+        }
+        Company company = this.companyRepository.findByCompanyId(userEntity.getCompanyId());
+        if (company == null) {
+            throw new RuntimeException("No se encontró la empresa para el user: " + user);
+        }
+        return company.getCompanyName();
+    }
+
+    public void createUser(String companyId, String uniqueID, String firstName, String lastName,
+            String email, String role, String status, String userType) {
         String userName = firstName.substring(0, 1).toUpperCase() + lastName.toUpperCase();
         String password = generateRandomPassword();
         String md5Password = DigestUtils.md5Hex(password);
@@ -69,21 +83,24 @@ public class UserService {
             throw new RuntimeException("El nombre de usuario ya existe.");
         }
         User user = new User();
+        user.setCompanyId(companyId);
+        user.setUniqueID(uniqueID);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
         user.setUser(userName);
         user.setPassword(md5Password);
         user.setEmail(email);
+        user.setRole(role);
+        user.setStatus(status);
+        user.setUserType(userType);
         this.userRepository.save(user);
         log.info("Usuario creado con nombre de usuario: {}, contraseña: {}", userName, password);
     }
 
-    private String generateRandomPassword() {
-        return UUID.randomUUID().toString().substring(0, 8);
-    }
-
-    public void updateUser(String id, UserDTO dto) {
-        log.info("Va a actualizar el usuario con ID: {}", id);
+    public void updateUser(String uniqueID, UserDTO dto) {
+        log.info("Va a actualizar el usuario con ID: {}", uniqueID);
         User user = this.mapper.toPersistence(dto);
-        user.setId(id);
+        user.setId(uniqueID);
         user = this.userRepository.save(user);
         log.info("Se actualizó el usuario: {}", user);
     }
@@ -116,7 +133,7 @@ public class UserService {
     public void changePassword(PasswordDTO passwordDTO) {
         User user = this.userRepository.findByUser(passwordDTO.getUser());
         if (user == null) {
-            throw new RuntimeException("Usuario no encontrado.");
+            throw new RuntimeException("No existe el usuario: " + passwordDTO.getUser());
         }
         if (!user.getPassword().equals(DigestUtils.md5Hex(passwordDTO.getOldPassword()))) {
             throw new RuntimeException("Contraseña actual incorrecta.");
@@ -127,6 +144,21 @@ public class UserService {
         if (company != null) {
             log.info("Nombre de la empresa asociada al usuario: {}", company.getCompanyName());
         }
+    }
+
+    public void generatePassword(String userName) {
+        User user = this.userRepository.findByUser(userName);
+        if (user == null) {
+            throw new RuntimeException("Usuario no encontrado.");
+        }
+        String password = generateRandomPassword();
+        user.setPassword(DigestUtils.md5Hex(password));
+        this.userRepository.save(user);
+        log.info("Contraseña generada para el usuario {}: {}", userName, password);
+    }
+
+    private String generateRandomPassword() {
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 
     public void resetPassword(String userName, String email) {

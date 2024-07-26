@@ -45,13 +45,26 @@ public class AccountService {
     public List<AccountDTO> getAccountsByCompanyId(String companyId) {
         log.info("Va a retornar todas las cuentas para la compañía con ID: {}", companyId);
         List<Account> accounts = this.accountRepository.findByCompanyId(companyId);
-        return accounts.stream().map(a -> this.mapper.toDTO(a)).collect(Collectors.toList());
+        return accounts.stream().map(a -> this.mapper.toDTO(a))
+                .collect(Collectors.toList());
     }
 
     public List<AccountDTO> getAccountsByUniqueIDs(List<String> uniqueIDs) {
         log.info("Va a buscar cuentas con los uniqueIDs: {}", uniqueIDs);
         List<Account> accounts = this.accountRepository.findByUniqueIDIn(uniqueIDs);
-        return accounts.stream().map(this.mapper::toDTO).collect(Collectors.toList());
+        return accounts.stream().map(a -> this.mapper.toDTO(a))
+                .collect(Collectors.toList());
+    }
+
+    public AccountDTO getAccountByCodeInternalAccount(String codeInternalAccount) {
+        log.info("Va a buscar la cuenta con codeInternalAccount: {}", codeInternalAccount);
+        Account account = this.accountRepository.findByCodeInternalAccount(codeInternalAccount);
+        if (account == null) {
+            log.info("No se encontró la cuenta con codeInternalAccount: {}", codeInternalAccount);
+            return null;
+        }
+        log.info("Se encontró la cuenta: {}", account);
+        return this.mapper.toDTO(account);
     }
 
     public void create(AccountDTO dto) {
@@ -62,10 +75,10 @@ public class AccountService {
         log.info("Se creó la cuenta: {}", account);
     }
 
-    public void updateAccount(String id, AccountDTO dto) {
-        log.info("Va a actualizar la cuenta con ID: {}", id);
+    public void updateAccount(String uniqueID, AccountDTO dto) {
+        log.info("Va a actualizar la cuenta con ID: {}", uniqueID);
         Account account = this.mapper.toPersistence(dto);
-        account.setId(id);
+        account.setId(uniqueID);
         account = this.accountRepository.save(account);
         log.info("Se actualizó la cuenta: {}", account);
     }

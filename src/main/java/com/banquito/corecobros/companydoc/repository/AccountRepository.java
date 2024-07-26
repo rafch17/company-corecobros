@@ -10,10 +10,12 @@ public interface AccountRepository extends MongoRepository<Account, String> {
 
     List<Account> findByCompanyId(String companyId);
 
-    Account findByCodeInternalAccountAndCompanyId(String codeInternalAccount, String companyId);
-
     Account findByUniqueID(String uniqueID);
 
     List<Account> findByUniqueIDIn(List<String> uniqueIDs);
+
+    Account findByCodeInternalAccountAndCompanyId(String codeInternalAccount, String companyId);
+
+    Account findByCodeInternalAccount(String codeInternalAccount);
 
 }

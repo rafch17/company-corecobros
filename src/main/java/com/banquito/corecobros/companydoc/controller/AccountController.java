@@ -46,22 +46,32 @@ public class AccountController {
         return ResponseEntity.ok(accounts);
     }
 
-    @PostMapping
+    @GetMapping("/company/{companyId}")
+    public ResponseEntity<List<AccountDTO>> getAccountsByCompanyId(@PathVariable String companyId) {
+        List<AccountDTO> accounts = this.service.getAccountsByCompanyId(companyId);
+        return ResponseEntity.ok(accounts);
+    }
+
+    @GetMapping("/codeInternalAccount/{codeInternalAccount}")
+    public ResponseEntity<AccountDTO> getAccountByCodeInternalAccount(@PathVariable String codeInternalAccount) {
+        AccountDTO account = this.service.getAccountByCodeInternalAccount(codeInternalAccount);
+        if (account != null) {
+            return ResponseEntity.ok(account);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/create")
     public ResponseEntity<Void> createAccount(@RequestBody AccountDTO dto) {
         this.service.create(dto);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateAccount(@PathVariable String id, @RequestBody AccountDTO dto) {
-        this.service.updateAccount(id, dto);
+    @PutMapping("/{uniqueID}")
+    public ResponseEntity<Void> updateAccount(@PathVariable String uniqueID, @RequestBody AccountDTO dto) {
+        this.service.updateAccount(uniqueID, dto);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/company/{companyId}")
-    public ResponseEntity<List<AccountDTO>> getAccountsByCompanyId(@PathVariable String companyId) {
-        List<AccountDTO> accounts = this.service.getAccountsByCompanyId(companyId);
-        return ResponseEntity.ok(accounts);
     }
 
 }

@@ -20,7 +20,7 @@ import lombok.ToString;
 @ToString
 @Document(collection = "users")
 @CompoundIndexes({
-        @CompoundIndex(name = "useridx_user_company", def = "{'user': 1, 'companyId': 1}", unique = true)
+        @CompoundIndex(name = "useridx_user", def = "{'user': 1, 'companyId': 1}", unique = true)
 })
 public class User {
 

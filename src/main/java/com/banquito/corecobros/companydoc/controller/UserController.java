@@ -42,21 +42,32 @@ public class UserController {
         }
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Void> createUser(@RequestParam String firstName, @RequestParam String lastName,
-            @RequestParam String email) {
+    @GetMapping("/company/name/{user}")
+    public ResponseEntity<String> getCompanyNameByUser(@PathVariable String user) {
         try {
-            service.createUser(firstName, lastName, email);
+            String companyName = service.getCompanyNameByUser(user);
+            return ResponseEntity.ok(companyName);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<Void> createUser(@RequestParam String companyId, @RequestParam String uniqueID,
+            @RequestParam String firstName, @RequestParam String lastName, @RequestParam String email,
+            @RequestParam String role, @RequestParam String status, @RequestParam String userType) {
+        try {
+            service.createUser(companyId, uniqueID, firstName, lastName, email, role, status, userType);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateUser(@PathVariable String id, @RequestBody UserDTO dto) {
+    @PutMapping("/{uniqueID}")
+    public ResponseEntity<Void> updateUser(@PathVariable String uniqueID, @RequestBody UserDTO dto) {
         try {
-            this.service.updateUser(id, dto);
+            this.service.updateUser(uniqueID, dto);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

@@ -15,7 +15,7 @@ import com.banquito.corecobros.companydoc.dto.ServiceeDTO;
 import com.banquito.corecobros.companydoc.service.ServiceeService;
 
 @RestController
-@RequestMapping("/api/v1/service")
+@RequestMapping("/api/v1/servicee")
 public class ServiceeController {
 
     private final ServiceeService serService;
@@ -45,15 +45,15 @@ public class ServiceeController {
         return ResponseEntity.ok(services);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Void> createService(@RequestBody ServiceeDTO dto) {
         this.serService.create(dto);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateService(@PathVariable String id, @RequestBody ServiceeDTO dto) {
-        this.serService.updateService(id, dto);
+    @PutMapping("/{uniqueID}")
+    public ResponseEntity<Void> updateService(@PathVariable String uniqueID, @RequestBody ServiceeDTO dto) {
+        this.serService.updateService(uniqueID, dto);
         return ResponseEntity.ok().build();
     }
 

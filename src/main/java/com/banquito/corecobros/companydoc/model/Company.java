@@ -1,5 +1,7 @@
 package com.banquito.corecobros.companydoc.model;
 
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
@@ -32,6 +34,7 @@ public class Company {
     @Indexed
     private String companyName;
     private String status;
+    private List<Account> accounts;
 
     @Override
     public int hashCode() {

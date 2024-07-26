@@ -42,24 +42,40 @@ public class CompanyController {
     }
 
     @GetMapping("/ruc/{ruc}")
-    public ResponseEntity<Company> getCompanyByRuc(@PathVariable String ruc) {
-        try {
-            Company company = service.getCompanyByRuc(ruc);
-            return ResponseEntity.ok(company);
-        } catch (RuntimeException e) {
+    public ResponseEntity<CompanyDTO> getCompanyByRuc(@PathVariable String ruc) {
+        Company company = service.getCompanyByRuc(ruc);
+        if (company != null) {
+            return ResponseEntity.ok(service.getCompanyByUniqueID(company.getUniqueID()));
+        } else {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @PostMapping
+    @GetMapping("/name/{companyName}")
+    public ResponseEntity<List<CompanyDTO>> getCompanyByCompanyName(@PathVariable String companyName) {
+        List<CompanyDTO> companies = service.getCompanyByCompanyName(companyName);
+        return ResponseEntity.ok(companies);
+    }
+
+    @GetMapping("/commissionId/{uniqueId}")
+    public ResponseEntity<CompanyDTO> getCommissionIdByCompanyId(@PathVariable String uniqueID) {
+        CompanyDTO company = service.getCommissionIdByCompanyId(uniqueID);
+        if (company != null) {
+            return ResponseEntity.ok(service.getCompanyByUniqueID(company.getUniqueID()));
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/create")
     public ResponseEntity<Void> createCompany(@RequestBody CompanyDTO dto) {
         this.service.create(dto);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateCompany(@PathVariable String id, @RequestBody CompanyDTO dto) {
-        this.service.updateCompany(id, dto);
+    @PutMapping("/{uniqueID}")
+    public ResponseEntity<Void> updateCompany(@PathVariable String uniqueID, @RequestBody CompanyDTO dto) {
+        this.service.updateCompany(uniqueID, dto);
         return ResponseEntity.ok().build();
     }
 

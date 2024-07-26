@@ -2,15 +2,12 @@ package com.banquito.corecobros.companydoc.util.mapper;
 
 import com.banquito.corecobros.companydoc.dto.UserDTO;
 import com.banquito.corecobros.companydoc.model.User;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-07-22T12:51:27-0500",
+    date = "2024-07-25T22:49:12-0500",
     comments = "version: 1.5.5.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.8.jar, environment: Java 21.0.3 (Eclipse Adoptium)"
 )
 @Component
@@ -24,22 +21,15 @@ public class UserMapperImpl implements UserMapper {
 
         UserDTO.UserDTOBuilder userDTO = UserDTO.builder();
 
-        userDTO.id( user.getId() );
         userDTO.companyId( user.getCompanyId() );
         userDTO.uniqueID( user.getUniqueID() );
+        userDTO.firstName( user.getFirstName() );
         userDTO.lastName( user.getLastName() );
         userDTO.user( user.getUser() );
         userDTO.password( user.getPassword() );
-        if ( user.getCreateDate() != null ) {
-            userDTO.createDate( DateTimeFormatter.ISO_LOCAL_DATE.format( user.getCreateDate() ) );
-        }
         userDTO.email( user.getEmail() );
         userDTO.role( user.getRole() );
         userDTO.status( user.getStatus() );
-        if ( user.getLastConnection() != null ) {
-            userDTO.lastConnection( DateTimeFormatter.ISO_LOCAL_DATE_TIME.format( user.getLastConnection() ) );
-        }
-        userDTO.failedAttempt( user.getFailedAttempt() );
         userDTO.userType( user.getUserType() );
 
         return userDTO.build();
@@ -53,24 +43,16 @@ public class UserMapperImpl implements UserMapper {
 
         User user = new User();
 
-        user.setId( userDTO.getId() );
         user.setCompanyId( userDTO.getCompanyId() );
         user.setUniqueID( userDTO.getUniqueID() );
+        user.setFirstName( userDTO.getFirstName() );
         user.setLastName( userDTO.getLastName() );
         user.setUser( userDTO.getUser() );
         user.setPassword( userDTO.getPassword() );
-        if ( userDTO.getCreateDate() != null ) {
-            user.setCreateDate( LocalDate.parse( userDTO.getCreateDate() ) );
-        }
         user.setEmail( userDTO.getEmail() );
         user.setRole( userDTO.getRole() );
         user.setStatus( userDTO.getStatus() );
-        if ( userDTO.getLastConnection() != null ) {
-            user.setLastConnection( LocalDateTime.parse( userDTO.getLastConnection() ) );
-        }
-        user.setFailedAttempt( userDTO.getFailedAttempt() );
         user.setUserType( userDTO.getUserType() );
-        user.setFirstLogin( userDTO.isFirstLogin() );
 
         return user;
     }
