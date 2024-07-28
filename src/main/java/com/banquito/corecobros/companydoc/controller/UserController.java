@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.banquito.corecobros.companydoc.dto.PasswordDTO;
 import com.banquito.corecobros.companydoc.dto.UserDTO;
 import com.banquito.corecobros.companydoc.service.UserService;
 
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService service;
@@ -32,9 +31,9 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/unique/{uniqueID}")
-    public ResponseEntity<UserDTO> getUserByUniqueID(@PathVariable String uniqueID) {
-        UserDTO user = service.getUserByUniqueID(uniqueID);
+    @GetMapping("/{uniqueId}")
+    public ResponseEntity<UserDTO> getUserByUniqueId(@PathVariable String uniqueId) {
+        UserDTO user = service.getUserByUniqueId(uniqueId);
         if (user != null) {
             return ResponseEntity.ok(user);
         } else {
@@ -42,7 +41,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/company/name/{user}")
+    @GetMapping("companyName/{user}")
     public ResponseEntity<String> getCompanyNameByUser(@PathVariable String user) {
         try {
             String companyName = service.getCompanyNameByUser(user);
@@ -52,22 +51,28 @@ public class UserController {
         }
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Void> createUser(@RequestParam String companyId, @RequestParam String uniqueID,
-            @RequestParam String firstName, @RequestParam String lastName, @RequestParam String email,
-            @RequestParam String role, @RequestParam String status, @RequestParam String userType) {
+    @PostMapping("/")
+    public ResponseEntity<Void> createUser(@RequestBody UserDTO userDTO) {
         try {
-            service.createUser(companyId, uniqueID, firstName, lastName, email, role, status, userType);
+            service.createUser(
+                userDTO.getCompanyId(),
+                userDTO.getFirstName(),
+                userDTO.getLastName(),
+                userDTO.getEmail(),
+                userDTO.getRole(),
+                userDTO.getStatus(),
+                userDTO.getUserType()
+            );
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @PutMapping("/{uniqueID}")
-    public ResponseEntity<Void> updateUser(@PathVariable String uniqueID, @RequestBody UserDTO dto) {
+    @PutMapping("/{uniqueId}")
+    public ResponseEntity<Void> updateUser(@PathVariable String uniqueId, @RequestBody UserDTO dto) {
         try {
-            this.service.updateUser(uniqueID, dto);
+            this.service.updateUser(uniqueId, dto);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -81,17 +86,17 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> login(@RequestBody PasswordDTO dto) {
+    public ResponseEntity<UserDTO> login(@RequestBody UserDTO dto) {
         try {
             UserDTO user = this.service.login(dto);
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);  
         }
     }
 
-    @PutMapping("/change-password")
-    public ResponseEntity<Void> changePassword(@RequestBody PasswordDTO dto) {
+    @PutMapping("/change-password/{uniqueId}")
+    public ResponseEntity<Void> changePassword(@RequestBody UserDTO dto) {
         try {
             this.service.changePassword(dto);
             return ResponseEntity.ok().build();

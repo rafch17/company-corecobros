@@ -9,13 +9,13 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.banquito.corecobros.companydoc.dto.PasswordDTO;
 import com.banquito.corecobros.companydoc.dto.UserDTO;
 import com.banquito.corecobros.companydoc.model.Company;
 import com.banquito.corecobros.companydoc.model.User;
 import com.banquito.corecobros.companydoc.repository.CompanyRepository;
 import com.banquito.corecobros.companydoc.repository.UserRepository;
 import com.banquito.corecobros.companydoc.util.mapper.UserMapper;
+import com.banquito.corecobros.companydoc.util.uniqueId.UniqueIdGeneration;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,11 +41,11 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public UserDTO getUserByUniqueID(String uniqueID) {
-        log.info("Va a buscar el usuario con uniqueID: {}", uniqueID);
-        User user = this.userRepository.findByUniqueID(uniqueID);
+    public UserDTO getUserByUniqueId(String uniqueId) {
+        log.info("Va a buscar el usuario con uniqueId: {}", uniqueId);
+        User user = this.userRepository.findByUniqueId(uniqueId);
         if (user == null) {
-            log.info("No se encontró el usuario con uniqueID: {}", uniqueID);
+            log.info("No se encontró el usuario con uniqueId: {}", uniqueId);
             return null;
         }
         log.info("Se encontró el usuario: {}", user);
@@ -67,24 +67,35 @@ public class UserService {
         if (userEntity == null) {
             throw new RuntimeException("No se encontró el usuario con user: " + user);
         }
-        Company company = this.companyRepository.findByCompanyId(userEntity.getCompanyId());
+        Company company = this.companyRepository.findByUniqueId(userEntity.getCompanyId());
         if (company == null) {
             throw new RuntimeException("No se encontró la empresa para el user: " + user);
         }
         return company.getCompanyName();
     }
 
-    public void createUser(String companyId, String uniqueID, String firstName, String lastName,
-            String email, String role, String status, String userType) {
-        String userName = firstName.substring(0, 1).toUpperCase() + lastName.toUpperCase();
+    public User createUser(String companyId, String firstName, String lastName,
+        String email, String role, String status, String userType) {
+        
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId;
+        boolean uniqueIdExists;
+
+        do {
+            uniqueId = uniqueIdGenerator.getUniqueId();
+            uniqueIdExists = userRepository.findByUniqueId(uniqueId) != null;
+        } while (uniqueIdExists);
+
+        String userName = firstName.substring(0, 1).toLowerCase() + lastName.toLowerCase();
         String password = generateRandomPassword();
         String md5Password = DigestUtils.md5Hex(password);
+
         if (this.userRepository.findByUser(userName) != null) {
             throw new RuntimeException("El nombre de usuario ya existe.");
         }
         User user = new User();
         user.setCompanyId(companyId);
-        user.setUniqueID(uniqueID);
+        user.setUniqueId(uniqueId);
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setUser(userName);
@@ -95,12 +106,13 @@ public class UserService {
         user.setUserType(userType);
         this.userRepository.save(user);
         log.info("Usuario creado con nombre de usuario: {}, contraseña: {}", userName, password);
+        return user;
     }
 
-    public void updateUser(String uniqueID, UserDTO dto) {
-        log.info("Va a actualizar el usuario con ID: {}", uniqueID);
+    public void updateUser(String uniqueId, UserDTO dto) {
+        log.info("Va a actualizar el usuario con ID: {}", uniqueId);
         User user = this.mapper.toPersistence(dto);
-        user.setId(uniqueID);
+        user.setId(uniqueId);
         user = this.userRepository.save(user);
         log.info("Se actualizó el usuario: {}", user);
     }
@@ -111,34 +123,45 @@ public class UserService {
         return users.stream().map(u -> this.mapper.toDTO(u)).collect(Collectors.toList());
     }
 
-    public UserDTO login(PasswordDTO dto) {
+    public UserDTO login(UserDTO dto) {
         String errorMessage = "Usuario o contraseña incorrecta";
+        System.out.println("UserDTO received: " + dto);
+        
         if (dto.getUser() != null && dto.getPassword() != null && dto.getUser().length() > 3
-                && dto.getPassword().length() == 32) {
+                && dto.getPassword().length() > 5) {  
+            System.out.println("Valid user and password length");
             User user = this.userRepository.findByUser(dto.getUser());
-            String md5 = DigestUtils.md5Hex(dto.getPassword());
-            if (user.getPassword().equals(md5)) {
-                user.setLastConnection(LocalDateTime.now());
-                this.userRepository.save(user);
-                if ("ACT".equals(user.getStatus())) {
-                    return this.mapper.toDTO(user);
-                } else {
-                    errorMessage = "Usuario no es activo";
+            
+            if (user != null) {
+                System.out.println("User found: " + user);
+                String md5 = DigestUtils.md5Hex(dto.getPassword());
+                System.out.println("MD5 of provided password: " + md5);
+                if (user.getPassword().equals(md5)) {
+                    user.setLastConnection(LocalDateTime.now());
+                    this.userRepository.save(user);
+                    
+                    if ("ACT".equals(user.getStatus())) {
+                        System.out.println("User is active");
+                        return this.mapper.toDTO(user);
+                    } else {
+                        errorMessage = "Usuario no es activo";
+                    }
                 }
             }
         }
+        System.out.println("Error: " + errorMessage);
         throw new RuntimeException(errorMessage);
-    }
+    }    
 
-    public void changePassword(PasswordDTO passwordDTO) {
-        User user = this.userRepository.findByUser(passwordDTO.getUser());
+    public void changePassword(UserDTO userDTO) {
+        User user = this.userRepository.findByUser(userDTO.getUser());
         if (user == null) {
-            throw new RuntimeException("No existe el usuario: " + passwordDTO.getUser());
+            throw new RuntimeException("No existe el usuario: " + userDTO.getUser());
         }
-        if (!user.getPassword().equals(DigestUtils.md5Hex(passwordDTO.getOldPassword()))) {
+        if (!user.getPassword().equals(DigestUtils.md5Hex(userDTO.getPassword()))) {
             throw new RuntimeException("Contraseña actual incorrecta.");
         }
-        user.setPassword(DigestUtils.md5Hex(passwordDTO.getNewPassword()));
+        user.setPassword(DigestUtils.md5Hex(userDTO.getPassword()));
         this.userRepository.save(user);
         Company company = this.companyRepository.findById(user.getCompanyId()).orElse(null);
         if (company != null) {
@@ -170,14 +193,14 @@ public class UserService {
             log.error("El correo electrónico no coincide para el usuario: {}", userName);
             throw new RuntimeException("Correo electrónico incorrecto.");
         }
-        String resetCode = generate6DigitCode();
+        String resetCode = generate8DigitCode();
         user.setResetCode(resetCode);
         this.userRepository.save(user);
         log.info("Código de restablecimiento generado para el usuario {}: {}", userName, resetCode);
     }
 
-    private String generate6DigitCode() {
-        return String.format("%06d", (int) (Math.random() * 1000000));
+    private String generate8DigitCode() {
+        return String.format("%08d", (int) (Math.random() * 1000000));
     }
 
     public boolean validateResetCode(String userName, String resetCode) {

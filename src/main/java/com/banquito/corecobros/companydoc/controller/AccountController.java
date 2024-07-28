@@ -16,7 +16,7 @@ import com.banquito.corecobros.companydoc.dto.AccountDTO;
 import com.banquito.corecobros.companydoc.service.AccountService;
 
 @RestController
-@RequestMapping("/api/v1/account")
+@RequestMapping("/api/v1/accounts")
 public class AccountController {
 
     private final AccountService service;
@@ -30,9 +30,9 @@ public class AccountController {
         return ResponseEntity.ok(this.service.obtainAllAccounts());
     }
 
-    @GetMapping("/unique/{uniqueID}")
-    public ResponseEntity<AccountDTO> getAccountByUniqueID(@PathVariable String uniqueID) {
-        AccountDTO account = service.getAccountByUniqueID(uniqueID);
+    @GetMapping("/{uniqueId}")
+    public ResponseEntity<AccountDTO> getAccountByUniqueId(@PathVariable String uniqueId) {
+        AccountDTO account = service.getAccountByUniqueId(uniqueId);
         if (account != null) {
             return ResponseEntity.ok(account);
         } else {
@@ -40,9 +40,9 @@ public class AccountController {
         }
     }
 
-    @GetMapping("/uniqueIDs")
-    public ResponseEntity<List<AccountDTO>> getAccountsByUniqueIDs(@RequestParam List<String> uniqueIDs) {
-        List<AccountDTO> accounts = service.getAccountsByUniqueIDs(uniqueIDs);
+    @GetMapping("/uniqueIds")
+    public ResponseEntity<List<AccountDTO>> getAccountsByUniqueIds(@RequestParam List<String> uniqueIds) {
+        List<AccountDTO> accounts = service.getAccountsByUniqueIds(uniqueIds);
         return ResponseEntity.ok(accounts);
     }
 
@@ -52,7 +52,7 @@ public class AccountController {
         return ResponseEntity.ok(accounts);
     }
 
-    @GetMapping("/codeInternalAccount/{codeInternalAccount}")
+    @GetMapping("/number/{codeInternalAccount}")
     public ResponseEntity<AccountDTO> getAccountByCodeInternalAccount(@PathVariable String codeInternalAccount) {
         AccountDTO account = this.service.getAccountByCodeInternalAccount(codeInternalAccount);
         if (account != null) {
@@ -62,15 +62,19 @@ public class AccountController {
         }
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Void> createAccount(@RequestBody AccountDTO dto) {
-        this.service.create(dto);
-        return ResponseEntity.ok().build();
+    @PostMapping("/")
+    public ResponseEntity<AccountDTO> createAccount(@RequestBody AccountDTO dto) {
+        try {
+            this.service.create(dto);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    @PutMapping("/{uniqueID}")
-    public ResponseEntity<Void> updateAccount(@PathVariable String uniqueID, @RequestBody AccountDTO dto) {
-        this.service.updateAccount(uniqueID, dto);
+    @PutMapping("/{uniqueId}")
+    public ResponseEntity<Void> updateAccount(@PathVariable String uniqueId, @RequestBody AccountDTO dto) {
+        this.service.updateAccount(uniqueId, dto);
         return ResponseEntity.ok().build();
     }
 

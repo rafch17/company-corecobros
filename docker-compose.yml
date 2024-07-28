@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 
 services:
   companydoc:
@@ -14,7 +14,7 @@ services:
 
   mongo:
     image: mongo:4.4
-    container_name: mongoc
+    container_name: mongo
     ports:
       - "27017:27017"
     environment:

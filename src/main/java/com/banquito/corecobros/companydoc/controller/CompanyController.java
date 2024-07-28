@@ -17,7 +17,7 @@ import com.banquito.corecobros.companydoc.model.Company;
 import com.banquito.corecobros.companydoc.service.CompanyService;
 
 @RestController
-@RequestMapping("/api/v1/company")
+@RequestMapping("/api/v1/companies")
 public class CompanyController {
 
     private final CompanyService service;
@@ -31,9 +31,9 @@ public class CompanyController {
         return ResponseEntity.ok(this.service.obtainAllCompanies());
     }
 
-    @GetMapping("/unique/{uniqueID}")
-    public ResponseEntity<CompanyDTO> getCompanyByUniqueID(@PathVariable String uniqueID) {
-        CompanyDTO company = service.getCompanyByUniqueID(uniqueID);
+    @GetMapping("/{uniqueId}")
+    public ResponseEntity<CompanyDTO> getCompanyByUniqueId(@PathVariable String uniqueId) {
+        CompanyDTO company = service.getCompanyByUniqueId(uniqueId);
         if (company != null) {
             return ResponseEntity.ok(company);
         } else {
@@ -45,7 +45,7 @@ public class CompanyController {
     public ResponseEntity<CompanyDTO> getCompanyByRuc(@PathVariable String ruc) {
         Company company = service.getCompanyByRuc(ruc);
         if (company != null) {
-            return ResponseEntity.ok(service.getCompanyByUniqueID(company.getUniqueID()));
+            return ResponseEntity.ok(service.getCompanyByUniqueId(company.getCompanyName()));
         } else {
             return ResponseEntity.badRequest().build();
         }
@@ -57,35 +57,40 @@ public class CompanyController {
         return ResponseEntity.ok(companies);
     }
 
-    @GetMapping("/commissionId/{uniqueId}")
-    public ResponseEntity<CompanyDTO> getCommissionIdByCompanyId(@PathVariable String uniqueID) {
-        CompanyDTO company = service.getCommissionIdByCompanyId(uniqueID);
+    @GetMapping("/commision/{uniqueId}")
+    public ResponseEntity<CompanyDTO> getCommissionIdByUniqueId(@PathVariable String uniqueId) {
+        CompanyDTO company = service.getCommissionIdByUniqueId(uniqueId);
         if (company != null) {
-            return ResponseEntity.ok(service.getCompanyByUniqueID(company.getUniqueID()));
+            return ResponseEntity.ok(service.getCompanyByUniqueId(company.getUniqueId()));
         } else {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Void> createCompany(@RequestBody CompanyDTO dto) {
-        this.service.create(dto);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/{uniqueID}")
-    public ResponseEntity<Void> updateCompany(@PathVariable String uniqueID, @RequestBody CompanyDTO dto) {
-        this.service.updateCompany(uniqueID, dto);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/register")
-    public ResponseEntity<CompanyDTO> registerCompany(@RequestParam String ruc, @RequestParam String accountNumber) {
+    @PostMapping("/")
+    public ResponseEntity<CompanyDTO> createCompany(@RequestBody CompanyDTO dto) {
         try {
-            CompanyDTO company = this.service.registerCompany(ruc, accountNumber);
-            return ResponseEntity.ok(company);
+            this.service.create(dto);
+            return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
+        }
+
+    }
+
+    @PutMapping("/{uniqueId}")
+    public ResponseEntity<Void> updateCompany(@PathVariable String uniqueId, @RequestBody CompanyDTO dto) {
+        this.service.updateCompany(uniqueId, dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<CompanyDTO> registerCompany(@RequestParam String ruc, @RequestParam String codeInternalAccount) {
+        try {
+            CompanyDTO company = this.service.registerCompany(ruc, codeInternalAccount);
+            return ResponseEntity.ok(company);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null); 
         }
     }
 

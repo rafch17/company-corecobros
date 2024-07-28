@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-07-25T22:49:13-0500",
+    date = "2024-07-28T01:17:10-0500",
     comments = "version: 1.5.5.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.8.jar, environment: Java 21.0.3 (Eclipse Adoptium)"
 )
 @Component
@@ -21,7 +21,8 @@ public class CompanyMapperImpl implements CompanyMapper {
 
         CompanyDTO.CompanyDTOBuilder companyDTO = CompanyDTO.builder();
 
-        companyDTO.uniqueID( company.getUniqueID() );
+        companyDTO.uniqueId( company.getUniqueId() );
+        companyDTO.commissionId( company.getCommissionId() );
         companyDTO.ruc( company.getRuc() );
         companyDTO.companyName( company.getCompanyName() );
         companyDTO.status( company.getStatus() );
@@ -37,7 +38,8 @@ public class CompanyMapperImpl implements CompanyMapper {
 
         Company company = new Company();
 
-        company.setUniqueID( companyDTO.getUniqueID() );
+        company.setUniqueId( companyDTO.getUniqueId() );
+        company.setCommissionId( companyDTO.getCommissionId() );
         company.setRuc( companyDTO.getRuc() );
         company.setCompanyName( companyDTO.getCompanyName() );
         company.setStatus( companyDTO.getStatus() );

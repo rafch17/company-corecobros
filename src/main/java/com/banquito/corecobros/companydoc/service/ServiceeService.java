@@ -9,6 +9,7 @@ import com.banquito.corecobros.companydoc.dto.ServiceeDTO;
 import com.banquito.corecobros.companydoc.model.Servicee;
 import com.banquito.corecobros.companydoc.repository.ServiceeRepository;
 import com.banquito.corecobros.companydoc.util.mapper.ServiceeMapper;
+import com.banquito.corecobros.companydoc.util.uniqueId.UniqueIdGeneration;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,13 +32,13 @@ public class ServiceeService {
                 .collect(Collectors.toList());
     }
 
-    public ServiceeDTO getServiceByUniqueID(String uniqueID) {
-        log.info("Va a buscar el servicio con UniqueID: {}", uniqueID);
-        Servicee service = this.serviceeRepository.findByUniqueID(uniqueID);
+    public ServiceeDTO getServiceByUniqueId(String uniqueId) {
+        log.info("Va a buscar el servicio con UniqueId: {}", uniqueId);
+        Servicee service = this.serviceeRepository.findByUniqueId(uniqueId);
         if (service != null) {
             return this.mapper.toDTO(service);
         } else {
-            throw new RuntimeException("No se encontró el servicio con UniqueID: " + uniqueID);
+            throw new RuntimeException("No se encontró el servicio con UniqueId: " + uniqueId);
         }
     }
 
@@ -48,18 +49,30 @@ public class ServiceeService {
                 .collect(Collectors.toList());
     }
 
-    public void create(ServiceeDTO dto) {
+    public ServiceeDTO create(ServiceeDTO dto) {
+
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId;
+        boolean uniqueIdExists;
+
+        do {
+            uniqueId = uniqueIdGenerator.getUniqueId();
+            uniqueIdExists = serviceeRepository.findByUniqueId(uniqueId) != null;
+        } while (uniqueIdExists);
+
         log.info("Va a registrar un servicio: {}", dto);
         Servicee service = mapper.toPersistence(dto);
+        service.setUniqueId(uniqueId);
         log.info("Servicio a registrar: {}", service);
         service = this.serviceeRepository.save(service);
         log.info("Se creó el servicio: {}", service);
+        return this.mapper.toDTO(service);
     }
 
-    public void updateService(String uniqueID, ServiceeDTO dto) {
-        log.info("Va a actualizar el servicio con ID: {}", uniqueID);
+    public void updateService(String uniqueId, ServiceeDTO dto) {
+        log.info("Va a actualizar el servicio con ID: {}", uniqueId);
         Servicee service = mapper.toPersistence(dto);
-        service.setId(uniqueID);
+        service.setId(uniqueId);
         service = this.serviceeRepository.save(service);
         log.info("Se actualizó el servicio: {}", service);
     }

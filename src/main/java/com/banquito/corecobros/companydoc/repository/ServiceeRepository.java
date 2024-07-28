@@ -8,7 +8,7 @@ import com.banquito.corecobros.companydoc.model.Servicee;
 
 public interface ServiceeRepository extends MongoRepository<Servicee, String> {
 
-    Servicee findByUniqueID(String uniqueID);
+    Servicee findByUniqueId(String uniqueId);
 
     List<Servicee> findByName(String name);
 

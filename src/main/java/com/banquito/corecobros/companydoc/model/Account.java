@@ -26,7 +26,7 @@ public class Account {
     @Indexed
     private String companyId;
     @Indexed(unique = true)
-    private String uniqueID;
+    private String uniqueId;
     private String codeInternalAccount;
     private String type;
     private String status;

@@ -8,7 +8,7 @@ import lombok.Value;
 public class AccountDTO {
 
     private String companyId;
-    private String uniqueID;
+    private String uniqueId;
     private String codeInternalAccount;
     private String type;
     private String status;

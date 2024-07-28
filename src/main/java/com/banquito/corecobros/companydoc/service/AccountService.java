@@ -9,6 +9,7 @@ import com.banquito.corecobros.companydoc.dto.AccountDTO;
 import com.banquito.corecobros.companydoc.model.Account;
 import com.banquito.corecobros.companydoc.repository.AccountRepository;
 import com.banquito.corecobros.companydoc.util.mapper.AccountMapper;
+import com.banquito.corecobros.companydoc.util.uniqueId.UniqueIdGeneration;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,11 +32,11 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
-    public AccountDTO getAccountByUniqueID(String uniqueID) {
-        log.info("Va a buscar la cuenta con uniqueID: {}", uniqueID);
-        Account account = this.accountRepository.findByUniqueID(uniqueID);
+    public AccountDTO getAccountByUniqueId(String uniqueId) {
+        log.info("Va a buscar la cuenta con uniqueId: {}", uniqueId);
+        Account account = this.accountRepository.findByUniqueId(uniqueId);
         if (account == null) {
-            log.info("No se encontró la cuenta con uniqueID: {}", uniqueID);
+            log.info("No se encontró la cuenta con uniqueId: {}", uniqueId);
             return null;
         }
         log.info("Se encontró la cuenta: {}", account);
@@ -49,9 +50,9 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
-    public List<AccountDTO> getAccountsByUniqueIDs(List<String> uniqueIDs) {
-        log.info("Va a buscar cuentas con los uniqueIDs: {}", uniqueIDs);
-        List<Account> accounts = this.accountRepository.findByUniqueIDIn(uniqueIDs);
+    public List<AccountDTO> getAccountsByUniqueIds(List<String> uniqueIds) {
+        log.info("Va a buscar cuentas con los uniqueIds: {}", uniqueIds);
+        List<Account> accounts = this.accountRepository.findByUniqueIdIn(uniqueIds);
         return accounts.stream().map(a -> this.mapper.toDTO(a))
                 .collect(Collectors.toList());
     }
@@ -67,18 +68,30 @@ public class AccountService {
         return this.mapper.toDTO(account);
     }
 
-    public void create(AccountDTO dto) {
+    public AccountDTO create(AccountDTO dto) {
+
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId;
+        boolean uniqueIdExists;
+
+        do {
+            uniqueId = uniqueIdGenerator.getUniqueId();
+            uniqueIdExists = accountRepository.findByUniqueId(uniqueId) != null;
+        } while (uniqueIdExists);
+
         log.info("Va a registrar una cuenta: {}", dto);
         Account account = this.mapper.toPersistence(dto);
+        account.setUniqueId(uniqueId);
         log.info("Cuenta a registrar: {}", account);
         account = this.accountRepository.save(account);
         log.info("Se creó la cuenta: {}", account);
+        return this.mapper.toDTO(account);
     }
 
-    public void updateAccount(String uniqueID, AccountDTO dto) {
-        log.info("Va a actualizar la cuenta con ID: {}", uniqueID);
+    public void updateAccount(String uniqueId, AccountDTO dto) {
+        log.info("Va a actualizar la cuenta con ID: {}", uniqueId);
         Account account = this.mapper.toPersistence(dto);
-        account.setId(uniqueID);
+        account.setId(uniqueId);
         account = this.accountRepository.save(account);
         log.info("Se actualizó la cuenta: {}", account);
     }

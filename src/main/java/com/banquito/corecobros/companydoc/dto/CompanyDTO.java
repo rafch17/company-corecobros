@@ -7,7 +7,8 @@ import lombok.Value;
 @Builder
 public class CompanyDTO {
 
-    private String uniqueID;
+    private String uniqueId;
+    private String commissionId;
     private String ruc;
     private String companyName;
     private String status;

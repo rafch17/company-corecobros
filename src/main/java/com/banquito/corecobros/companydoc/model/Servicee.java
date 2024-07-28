@@ -19,7 +19,7 @@ public class Servicee {
     @Id
     private String id;
     @Indexed(unique = true)
-    private String uniqueID;
+    private String uniqueId;
     private String name;
     private String status;
     private String description;

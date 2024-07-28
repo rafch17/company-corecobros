@@ -15,7 +15,7 @@ import com.banquito.corecobros.companydoc.dto.ServiceeDTO;
 import com.banquito.corecobros.companydoc.service.ServiceeService;
 
 @RestController
-@RequestMapping("/api/v1/servicee")
+@RequestMapping("/api/v1/servicees")
 public class ServiceeController {
 
     private final ServiceeService serService;
@@ -29,9 +29,9 @@ public class ServiceeController {
         return ResponseEntity.ok(this.serService.obtainAllServices());
     }
 
-    @GetMapping("/unique/{uniqueID}")
-    public ResponseEntity<ServiceeDTO> getServiceByUniqueID(@PathVariable String uniqueID) {
-        ServiceeDTO serviceDTO = this.serService.getServiceByUniqueID(uniqueID);
+    @GetMapping("/{uniqueId}")
+    public ResponseEntity<ServiceeDTO> getServiceByUniqueId(@PathVariable String uniqueId) {
+        ServiceeDTO serviceDTO = this.serService.getServiceByUniqueId(uniqueId);
         if (serviceDTO != null) {
             return ResponseEntity.ok(serviceDTO);
         } else {
@@ -45,15 +45,20 @@ public class ServiceeController {
         return ResponseEntity.ok(services);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Void> createService(@RequestBody ServiceeDTO dto) {
-        this.serService.create(dto);
-        return ResponseEntity.ok().build();
+    @PostMapping("/")
+    public ResponseEntity<ServiceeDTO> createService(@RequestBody ServiceeDTO dto) {
+        try {
+            this.serService.create(dto);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+        
     }
 
-    @PutMapping("/{uniqueID}")
-    public ResponseEntity<Void> updateService(@PathVariable String uniqueID, @RequestBody ServiceeDTO dto) {
-        this.serService.updateService(uniqueID, dto);
+    @PutMapping("/{uniqueId}")
+    public ResponseEntity<Void> updateService(@PathVariable String uniqueId, @RequestBody ServiceeDTO dto) {
+        this.serService.updateService(uniqueId, dto);
         return ResponseEntity.ok().build();
     }
 

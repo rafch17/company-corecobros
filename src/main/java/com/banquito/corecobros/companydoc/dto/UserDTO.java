@@ -8,7 +8,7 @@ import lombok.Value;
 public class UserDTO {
 
     private String companyId;
-    private String uniqueID;
+    private String uniqueId;
     private String firstName;
     private String lastName;
     private String user;

@@ -7,7 +7,7 @@ import lombok.Value;
 @Builder
 public class ServiceeDTO {
 
-    private String uniqueID;
+    private String uniqueId;
     private String name;
     private String status;
     private String description;

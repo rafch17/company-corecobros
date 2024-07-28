@@ -12,6 +12,7 @@ import com.banquito.corecobros.companydoc.model.User;
 import com.banquito.corecobros.companydoc.repository.AccountRepository;
 import com.banquito.corecobros.companydoc.repository.CompanyRepository;
 import com.banquito.corecobros.companydoc.util.mapper.CompanyMapper;
+import com.banquito.corecobros.companydoc.util.uniqueId.UniqueIdGeneration;
 import com.banquito.corecobros.companydoc.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +41,11 @@ public class CompanyService {
                 .collect(Collectors.toList());
     }
 
-    public CompanyDTO getCompanyByUniqueID(String uniqueID) {
-        log.info("Va a buscar el usuario con uniqueID: {}", uniqueID);
-        Company company = this.companyRepository.findByUniqueID(uniqueID);
+    public CompanyDTO getCompanyByUniqueId(String uniqueId) {
+        log.info("Va a buscar el usuario con uniqueId: {}", uniqueId);
+        Company company = this.companyRepository.findByUniqueId(uniqueId);
         if (company == null) {
-            log.info("No se encontró el usuario con uniqueID: {}", uniqueID);
+            log.info("No se encontró el usuario con uniqueId: {}", uniqueId);
             return null;
         }
         log.info("Se encontró el usuario: {}", company);
@@ -53,74 +54,109 @@ public class CompanyService {
 
     public Company getCompanyByRuc(String ruc) {
         log.info("Va a buscar la compañía con RUC: {}", ruc);
-        Company company = this.companyRepository.findByRuc(ruc);
-        if (company != null) {
-            log.info("Se encontró la compañía: {}", company);
-            return company;
-        } else {
-            throw new RuntimeException("No existe compañía con el RUC:" + ruc);
+        try {
+            Company company = this.companyRepository.findByRuc(ruc);
+            if (company != null) {
+                log.info("Se encontró la compañía: {}", company);
+                return company;
+            } else {
+                throw new RuntimeException("No existe compañía con el RUC:" + ruc);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al buscar la compañía con RUC: " + ruc, e);
         }
     }
 
     public List<CompanyDTO> getCompanyByCompanyName(String companyName) {
         log.info("Va a buscar las compañías con nombre: {}", companyName);
-        List<Company> companies = this.companyRepository.findByCompanyName(companyName);
-        return companies.stream().map(c -> this.companyMapper.toDTO(c))
-                .collect(Collectors.toList());
-    }
-
-    public CompanyDTO getCommissionIdByCompanyId(String uniqueID) {
-        log.info("Va a buscar la comisión de la compañía con ID: {}", uniqueID);
-        Company company = this.companyRepository.findByUniqueID(uniqueID);
-        if (company != null) {
-            log.info("Se encontró la compañía: {}", company);
-            if (company.getCommissionId() != null) {
-                Company commission = this.companyRepository.findByUniqueID(company.getCommissionId());
-                if (commission != null) {
-                    log.info("Se encontró la comisión: {}", commission);
-                    return this.companyMapper.toDTO(commission);
-                } else {
-                    throw new RuntimeException(
-                            "No existe la comisión para la empresa con ID: " + company.getCommissionId());
-                }
-            } else {
-                throw new RuntimeException("La empresa con ID " + uniqueID + " no tiene una comisión asociada.");
-            }
-        } else {
-            throw new RuntimeException("No existe la empresa con ID: " + uniqueID);
+        try {
+            List<Company> companies = this.companyRepository.findByCompanyName(companyName);
+            return companies.stream().map(c -> this.companyMapper.toDTO(c))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error al buscar las compañías con nombre: {}", companyName, e);
+            throw new RuntimeException("Error al buscar las compañías con nombre: " + companyName, e);
         }
     }
 
-    public void create(CompanyDTO dto) {
+    public CompanyDTO getCommissionIdByUniqueId(String uniqueId) {
+        log.info("Va a buscar la comisión de la compañía con ID: {}", uniqueId);
+        try {
+            Company company = this.companyRepository.findByUniqueId(uniqueId);
+            if (company != null) {
+                log.info("Se encontró la compañía: {}", company);
+                if (company.getCommissionId() != null) {
+                    Company commission = this.companyRepository.findByCommissionId(company.getCommissionId());
+                    if (commission != null) {
+                        log.info("Se encontró la comisión: {}", commission);
+                        return this.companyMapper.toDTO(commission);
+                    } else {
+                        throw new RuntimeException(
+                                "No existe la comisión para la empresa con ID: " + company.getCommissionId());
+                    }
+                } else {
+                    throw new RuntimeException("La empresa con ID " + uniqueId + " no tiene una comisión asociada.");
+                }
+            } else {
+                throw new RuntimeException("No existe la empresa con ID: " + uniqueId);
+            }
+        } catch (Exception e) {
+            log.error("Error al buscar la comisión de la compañía con ID: {}", uniqueId, e);
+            throw new RuntimeException("Error al buscar la comisión de la compañía con ID: " + uniqueId, e);
+        }
+    }
+
+    public CompanyDTO create(CompanyDTO dto) {
+
+        UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
+        String uniqueId;
+        boolean uniqueIdExists;
+
+        do {
+            uniqueId = uniqueIdGenerator.getUniqueId();
+            uniqueIdExists = companyRepository.findByUniqueId(uniqueId) != null;
+        } while (uniqueIdExists);
+
         log.info("Va a registrar una compañía: {}", dto);
         Company company = this.companyMapper.toPersistence(dto);
+        company.setUniqueId(uniqueId);
         log.info("Compañía a registrar: {}", company);
         company = this.companyRepository.save(company);
         log.info("Se creó la compañía: {}", company);
+        return this.companyMapper.toDTO(company);
     }
 
-    public void updateCompany(String uniqueID, CompanyDTO dto) {
-        log.info("Va a actualizar la compañía con ID: {}", uniqueID);
+    public void updateCompany(String uniqueId, CompanyDTO dto) {
+        log.info("Va a actualizar la compañía con ID: {}", uniqueId);
         Company company = this.companyMapper.toPersistence(dto);
-        company.setId(uniqueID);
+        company.setId(uniqueId);
         company = this.companyRepository.save(company);
         log.info("Se actualizó la compañía: {}", company);
     }
 
-    public CompanyDTO registerCompany(String ruc, String accountNumber) {
+    public CompanyDTO registerCompany(String ruc, String codeInternalAccount) {
+        log.info("Iniciando registro de compañía con RUC: {} y número de cuenta: {}", ruc, codeInternalAccount);
+    
         Company company = this.companyRepository.findByRuc(ruc);
         if (company == null) {
+            log.error("No existe compañía con el RUC: {}", ruc);
             throw new RuntimeException("No existe compañía con el RUC:" + ruc);
         }
+    
         List<User> users = this.userRepository.findByCompanyId(company.getId());
         if (!users.isEmpty()) {
+            log.error("La compañía ya tiene usuarios asociados.");
             throw new RuntimeException("La compañía ya tiene usuarios asociados.");
         }
-        Account account = this.accountRepository.findByCodeInternalAccountAndCompanyId(accountNumber, company.getId());
+    
+        Account account = this.accountRepository.findByCodeInternalAccountAndCompanyId(codeInternalAccount, company.getId());
         if (account == null) {
+            log.error("No existe cuenta con el número de cuenta proporcionado: {}", codeInternalAccount);
             throw new RuntimeException("No existe cuenta con el número de cuenta proporcionado.");
         }
+    
+        log.info("Registro de compañía completado para RUC: {}", ruc);
         return this.companyMapper.toDTO(company);
-    }
+    }    
 
 }

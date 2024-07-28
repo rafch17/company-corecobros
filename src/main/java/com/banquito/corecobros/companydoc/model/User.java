@@ -29,7 +29,7 @@ public class User {
     @Indexed
     private String companyId;
     @Indexed(unique = true)
-    private String uniqueID;
+    private String uniqueId;
     private String firstName;
     private String lastName;
     @Indexed

@@ -26,7 +26,7 @@ public class Company {
     @Id
     private String id;
     @Indexed(unique = true)
-    private String uniqueID;
+    private String uniqueId;
     @Indexed
     private String commissionId;
     @Indexed(unique = true)
