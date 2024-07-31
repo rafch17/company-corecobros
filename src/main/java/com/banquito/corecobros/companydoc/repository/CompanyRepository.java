@@ -12,6 +12,8 @@ public interface CompanyRepository extends MongoRepository<Company, String> {
 
     List<Company> findByCompanyName(String companyName);
 
+    List<Company> findByCompanyNameContaining(String companyName);
+
     Company findByUniqueId(String uniqueId);
 
     Company findByCommissionId(String commissionId);

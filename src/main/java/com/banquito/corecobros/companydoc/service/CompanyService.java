@@ -70,7 +70,7 @@ public class CompanyService {
     public List<CompanyDTO> getCompanyByCompanyName(String companyName) {
         log.info("Va a buscar las compañías con nombre: {}", companyName);
         try {
-            List<Company> companies = this.companyRepository.findByCompanyName(companyName);
+            List<Company> companies = this.companyRepository.findByCompanyNameContaining(companyName);
             return companies.stream().map(c -> this.companyMapper.toDTO(c))
                     .collect(Collectors.toList());
         } catch (Exception e) {
