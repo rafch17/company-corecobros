@@ -35,6 +35,7 @@ public class Company {
     private String companyName;
     private String status;
     private List<Account> accounts;
+    private List<Servicee> servicees;
 
     @Override
     public int hashCode() {

@@ -1,5 +1,7 @@
 package com.banquito.corecobros.companydoc.dto;
 
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -12,5 +14,7 @@ public class CompanyDTO {
     private String ruc;
     private String companyName;
     private String status;
+    private List<AccountDTO> accounts;
+    private List<ServiceeDTO> servicees;
 
 }

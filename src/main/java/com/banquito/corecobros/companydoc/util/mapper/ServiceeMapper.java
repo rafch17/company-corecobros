@@ -10,11 +10,9 @@ import com.banquito.corecobros.companydoc.model.Servicee;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ServiceeMapper {
-
     @Mapping(source = "uniqueId", target = "uniqueId")
     ServiceeDTO toDTO(Servicee servicee);
 
     @Mapping(source = "uniqueId", target = "uniqueId")
     Servicee toPersistence(ServiceeDTO serviceeDTO);
-
 }

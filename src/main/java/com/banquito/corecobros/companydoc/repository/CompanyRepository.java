@@ -12,10 +12,16 @@ public interface CompanyRepository extends MongoRepository<Company, String> {
 
     List<Company> findByCompanyName(String companyName);
 
-    List<Company> findByCompanyNameContaining(String companyName);
+    List<Company> findByCompanyNameContainingIgnoreCase(String companyName);
 
     Company findByUniqueId(String uniqueId);
 
     Company findByCommissionId(String commissionId);
+
+    List<Company> findByAccountsCodeInternalAccount(String codeInternalAccount);
+
+    List<Company> findByServiceesName(String name);
+
+
 
 }

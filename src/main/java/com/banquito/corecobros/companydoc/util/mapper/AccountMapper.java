@@ -10,11 +10,9 @@ import com.banquito.corecobros.companydoc.model.Account;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AccountMapper {
-
     @Mapping(source = "uniqueId", target = "uniqueId")
     AccountDTO toDTO(Account account);
 
     @Mapping(source = "uniqueId", target = "uniqueId")
     Account toPersistence(AccountDTO accountDTO);
-
 }
