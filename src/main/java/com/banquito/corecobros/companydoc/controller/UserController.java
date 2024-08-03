@@ -57,17 +57,17 @@ public class UserController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<User> createUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<User> createUser(@RequestBody User userRequest) {
         try {
-            User user = service.createUser(
-                    userDTO.getCompanyId(),
-                    userDTO.getFirstName(),
-                    userDTO.getLastName(),
-                    userDTO.getEmail(),
-                    userDTO.getRole(),
-                    userDTO.getStatus(),
-                    userDTO.getUserType());
-            return ResponseEntity.ok(user);
+            User createdUser = service.createUser(
+                    userRequest.getCompanyId(),
+                    userRequest.getFirstName(),
+                    userRequest.getLastName(),
+                    userRequest.getEmail(),
+                    userRequest.getRole(),
+                    userRequest.getStatus(),
+                    userRequest.getUserType());
+            return ResponseEntity.ok(createdUser);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -90,12 +90,15 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> login(@RequestBody UserDTO dto) {
+    public ResponseEntity<?> login(@RequestBody User dto) {
         try {
-            UserDTO user = this.service.login(dto);
-            return ResponseEntity.ok(user);
+            User loggedUser = service.login(dto);
+            return ResponseEntity.ok(loggedUser);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
+            if ("Primera vez que inicia sesión. Debe cambiar su contraseña.".equals(e.getMessage())) {
+                return ResponseEntity.status(403).body(e.getMessage());
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

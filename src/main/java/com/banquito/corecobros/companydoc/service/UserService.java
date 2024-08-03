@@ -1,9 +1,10 @@
 package com.banquito.corecobros.companydoc.service;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,12 +101,15 @@ public class UserService {
         user.setLastName(lastName);
         user.setUser(userName);
         user.setPassword(md5Password);
+        user.setCreateDate(LocalDate.now());
         user.setEmail(email);
         user.setRole(role);
         user.setStatus(status);
-        user.setUserType(userType);
+        user.setUserType(userType); 
         this.userRepository.save(user);
-        log.info("Usuario creado con nombre de usuario: {}, contraseña: {}", userName, password);
+        String logMessage = String.format("Usuario creado con nombre de usuario: %s, contraseña: %s", userName, password);
+        log.info(logMessage);
+        user.setMessage(logMessage); 
         return user;
     }
 
@@ -132,26 +136,31 @@ public class UserService {
         return users.stream().map(u -> this.mapper.toDTO(u)).collect(Collectors.toList());
     }
 
-    public UserDTO login(UserDTO dto) {
+    public User login(User dto) {
         String errorMessage = "Usuario o contraseña incorrecta";
-        System.out.println("UserDTO received: " + dto);
-
+        System.out.println("Usuario: " + dto);
+    
         if (dto.getUser() != null && dto.getPassword() != null && dto.getUser().length() > 3
                 && dto.getPassword().length() > 5) {
-            System.out.println("Valid user and password length");
+            System.out.println("El usuario y contraseña coinciden");
             User user = this.userRepository.findByUser(dto.getUser());
-
+    
             if (user != null) {
-                System.out.println("User found: " + user);
+                System.out.println("Usuario encontrado: " + user);
                 String md5 = DigestUtils.md5Hex(dto.getPassword());
-                System.out.println("MD5 of provided password: " + md5);
+                System.out.println("MD5 de la contraseña proporcionada: " + md5);
                 if (user.getPassword().equals(md5)) {
                     user.setLastConnection(LocalDateTime.now());
                     this.userRepository.save(user);
-
+    
                     if ("ACT".equals(user.getStatus())) {
-                        System.out.println("User is active");
-                        return this.mapper.toDTO(user);
+                        System.out.println("Usuario activo");
+                        if (user.isFirstLogin()) {
+                            errorMessage = "Primera vez que inicia sesión. Debe cambiar su contraseña.";
+                            System.out.println(errorMessage);
+                            throw new RuntimeException(errorMessage);
+                        }
+                        return user;
                     } else {
                         errorMessage = "Usuario no es activo";
                     }
@@ -161,6 +170,7 @@ public class UserService {
         System.out.println("Error: " + errorMessage);
         throw new RuntimeException(errorMessage);
     }
+    
 
     public void changePassword(UserDTO userDTO) {
         User user = this.userRepository.findByUser(userDTO.getUser());

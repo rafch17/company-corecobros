@@ -47,6 +47,7 @@ public class User {
     private boolean isFirstLogin;
     private String oldPassword;
     private String newPassword;
+    private String message;
 
     @Override
     public int hashCode() {
