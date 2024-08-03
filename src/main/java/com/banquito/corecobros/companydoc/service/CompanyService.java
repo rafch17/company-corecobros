@@ -3,17 +3,13 @@ package com.banquito.corecobros.companydoc.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.stereotype.Service;
 
 import com.banquito.corecobros.companydoc.dto.CompanyDTO;
 import com.banquito.corecobros.companydoc.model.Account;
 import com.banquito.corecobros.companydoc.model.Company;
 import com.banquito.corecobros.companydoc.model.Servicee;
-import com.banquito.corecobros.companydoc.model.User;
 import com.banquito.corecobros.companydoc.repository.CompanyRepository;
-import com.banquito.corecobros.companydoc.repository.UserRepository;
 import com.banquito.corecobros.companydoc.util.mapper.CompanyMapper;
 import com.banquito.corecobros.companydoc.util.uniqueId.UniqueIdGeneration;
 
@@ -24,13 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
-    private final UserRepository userRepository;
     private final CompanyMapper companyMapper;
 
-    public CompanyService(CompanyRepository companyRepository, UserRepository userRepository,
-            CompanyMapper companyMapper) {
+    public CompanyService(CompanyRepository companyRepository, CompanyMapper companyMapper) {
         this.companyRepository = companyRepository;
-        this.userRepository = userRepository;
         this.companyMapper = companyMapper;
     }
 
@@ -103,7 +96,6 @@ public class CompanyService {
         if (this.companyRepository.findByRuc(company.getRuc()) != null) {
             throw new RuntimeException("Ya existe una compañía con el RUC: " + company.getRuc());
         }
-
         boolean accountExists = this.companyRepository.findAll().stream()
                 .flatMap(c -> c.getAccounts().stream())
                 .anyMatch(account -> account.getCodeInternalAccount()
@@ -117,20 +109,15 @@ public class CompanyService {
             uniqueId = uniqueIdGenerator.getUniqueId();
             uniqueIdExists = companyRepository.findByUniqueId(uniqueId) != null;
         } while (uniqueIdExists);
-
         log.info("Creacion de compania: {}", company);
         company.setUniqueId(uniqueId);
-
         for (Account account : company.getAccounts()) {
             account.setUniqueId(uniqueId);
         }
-
         for (Servicee servicee : company.getServicees()) {
             servicee.setUniqueId(uniqueId);
         }
-
         Company savedCompany = this.companyRepository.save(company);
-
         log.info("Compania creada: {}", savedCompany);
         return savedCompany;
     }

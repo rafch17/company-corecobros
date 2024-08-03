@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banquito.corecobros.companydoc.dto.UserDTO;
+import com.banquito.corecobros.companydoc.model.User;
 import com.banquito.corecobros.companydoc.service.UserService;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-    RequestMethod.PUT })
+        RequestMethod.PUT })
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
@@ -56,27 +57,26 @@ public class UserController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Void> createUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<User> createUser(@RequestBody UserDTO userDTO) {
         try {
-            service.createUser(
-                userDTO.getCompanyId(),
-                userDTO.getFirstName(),
-                userDTO.getLastName(),
-                userDTO.getEmail(),
-                userDTO.getRole(),
-                userDTO.getStatus(),
-                userDTO.getUserType()
-            );
-            return ResponseEntity.ok().build();
+            User user = service.createUser(
+                    userDTO.getCompanyId(),
+                    userDTO.getFirstName(),
+                    userDTO.getLastName(),
+                    userDTO.getEmail(),
+                    userDTO.getRole(),
+                    userDTO.getStatus(),
+                    userDTO.getUserType());
+            return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
     @PutMapping("/{uniqueId}")
-    public ResponseEntity<Void> updateUser(@PathVariable String uniqueId, @RequestBody UserDTO dto) {
+    public ResponseEntity<Void> updateUser(@PathVariable String uniqueId, @RequestBody User user) {
         try {
-            this.service.updateUser(uniqueId, dto);
+            this.service.updateUser(uniqueId, user);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -95,7 +95,7 @@ public class UserController {
             UserDTO user = this.service.login(dto);
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);  
+            return ResponseEntity.badRequest().body(null);
         }
     }
 

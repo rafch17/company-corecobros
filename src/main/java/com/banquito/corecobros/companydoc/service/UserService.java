@@ -75,8 +75,8 @@ public class UserService {
     }
 
     public User createUser(String companyId, String firstName, String lastName,
-        String email, String role, String status, String userType) {
-        
+            String email, String role, String status, String userType) {
+
         UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
         String uniqueId;
         boolean uniqueIdExists;
@@ -109,12 +109,21 @@ public class UserService {
         return user;
     }
 
-    public void updateUser(String uniqueId, UserDTO dto) {
+    public void updateUser(String uniqueId, User userDetails) {
         log.info("Va a actualizar el usuario con ID: {}", uniqueId);
-        User user = this.mapper.toPersistence(dto);
-        user.setId(uniqueId);
-        user = this.userRepository.save(user);
-        log.info("Se actualizó el usuario: {}", user);
+        User existingUser = this.userRepository.findByUniqueId(uniqueId);
+        if (existingUser == null) {
+            throw new RuntimeException("No se encontró la compañía con ID: " + uniqueId);
+        }
+        existingUser.setCompanyId(userDetails.getCompanyId());
+        existingUser.setFirstName(userDetails.getFirstName());
+        existingUser.setLastName(userDetails.getLastName());
+        existingUser.setEmail(userDetails.getEmail());
+        existingUser.setRole(userDetails.getRole());
+        existingUser.setStatus(userDetails.getStatus());
+        existingUser.setUserType(userDetails.getUserType());
+        User updatedUser = this.userRepository.save(existingUser);
+        log.info("Se actualizó el usuario: {}", updatedUser);
     }
 
     public List<UserDTO> getUsersByCompanyId(String companyId) {
@@ -126,12 +135,12 @@ public class UserService {
     public UserDTO login(UserDTO dto) {
         String errorMessage = "Usuario o contraseña incorrecta";
         System.out.println("UserDTO received: " + dto);
-        
+
         if (dto.getUser() != null && dto.getPassword() != null && dto.getUser().length() > 3
-                && dto.getPassword().length() > 5) {  
+                && dto.getPassword().length() > 5) {
             System.out.println("Valid user and password length");
             User user = this.userRepository.findByUser(dto.getUser());
-            
+
             if (user != null) {
                 System.out.println("User found: " + user);
                 String md5 = DigestUtils.md5Hex(dto.getPassword());
@@ -139,7 +148,7 @@ public class UserService {
                 if (user.getPassword().equals(md5)) {
                     user.setLastConnection(LocalDateTime.now());
                     this.userRepository.save(user);
-                    
+
                     if ("ACT".equals(user.getStatus())) {
                         System.out.println("User is active");
                         return this.mapper.toDTO(user);
@@ -151,7 +160,7 @@ public class UserService {
         }
         System.out.println("Error: " + errorMessage);
         throw new RuntimeException(errorMessage);
-    }    
+    }
 
     public void changePassword(UserDTO userDTO) {
         User user = this.userRepository.findByUser(userDTO.getUser());
