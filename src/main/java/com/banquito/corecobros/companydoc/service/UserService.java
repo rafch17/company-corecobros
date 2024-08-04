@@ -170,7 +170,7 @@ public class UserService {
         throw new RuntimeException(errorMessage);
     }
 
-    public void changePassword(String userName, String oldPassword, String newPassword) {
+    public String changePassword(String userName, String oldPassword, String newPassword) {
         User user = this.userRepository.findByUser(userName);
         if (user == null) {
             throw new RuntimeException("Usuario no encontrado.");
@@ -183,8 +183,10 @@ public class UserService {
         user.setPassword(md5NewPassword);
         user.setFirstLogin(false);
         this.userRepository.save(user);
-        String logMessage = String.format("Contraseña actualizada para el usuario: %s", userName);
+        String logMessage = String.format("Contraseña actualizada para el usuario: %s. Nueva contraseña: %s", userName,
+                newPassword);
         log.info(logMessage);
+        return logMessage;
     }
 
     public void generatePassword(String userName) {

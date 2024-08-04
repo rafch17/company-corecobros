@@ -125,8 +125,8 @@ public class UserController {
     public ResponseEntity<String> changePassword(@RequestParam String userName, @RequestParam String oldPassword,
             @RequestParam String newPassword) {
         try {
-            this.service.changePassword(userName, oldPassword, newPassword);
-            return ResponseEntity.ok(String.format("Contraseña actualizada para el usuario: %s", userName));
+            String message = this.service.changePassword(userName, oldPassword, newPassword);
+            return ResponseEntity.ok(message); 
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
