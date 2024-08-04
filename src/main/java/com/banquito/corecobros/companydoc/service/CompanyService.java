@@ -27,6 +27,10 @@ public class CompanyService {
         this.companyMapper = companyMapper;
     }
 
+    public Company findByUniqueId(String uniqueId) {
+        return companyRepository.findByUniqueId(uniqueId);
+    }
+
     public List<CompanyDTO> obtainAllCompanies() {
         log.info("Va a retornar todas las compañías");
         List<Company> companies = this.companyRepository.findAll();
