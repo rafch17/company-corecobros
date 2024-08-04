@@ -18,14 +18,14 @@ import com.banquito.corecobros.companydoc.dto.UserDTO;
 import com.banquito.corecobros.companydoc.model.User;
 import com.banquito.corecobros.companydoc.service.UserService;
 
-//import io.swagger.v3.oas.annotations.Operation;
-//import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
     RequestMethod.PUT })
 @RestController
-@RequestMapping("/api/v1/users")
-// @Tag(name = "User", description = "Endpoints for managing users")
+@RequestMapping("/user-microservice/api/v1/users")
+@Tag(name = "User", description = "Endpoints for managing users")
 public class UserController {
 
     private final UserService service;
@@ -35,16 +35,14 @@ public class UserController {
     }
 
     @GetMapping
-    // @Operation(summary = "Get all users", description = "Retrieve a list of all
-    // users")
+    @Operation(summary = "Get all users", description = "Retrieve a list of all users")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = this.service.obtainAllUsers();
         return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{uniqueId}")
-    // @Operation(summary = "Get user by uniqueId", description = "Retrieve a user
-    // by its uniqueId")
+    @Operation(summary = "Get user by uniqueId", description = "Retrieve a user by its uniqueId")
     public ResponseEntity<UserDTO> getUserByUniqueId(@PathVariable String uniqueId) {
         UserDTO user = service.getUserByUniqueId(uniqueId);
         if (user != null) {
@@ -55,8 +53,7 @@ public class UserController {
     }
 
     @GetMapping("companyName/{user}")
-    // @Operation(summary = "Get company by user", description = "Retrieve a company
-    // by its user")
+    @Operation(summary = "Get company by user", description = "Retrieve a company by its user")
     public ResponseEntity<String> getCompanyNameByUser(@PathVariable String user) {
         try {
             String companyName = service.getCompanyNameByUser(user);
@@ -67,7 +64,7 @@ public class UserController {
     }
 
     @PostMapping("/")
-    // @Operation(summary = "Create a user", description = "Create a new user")
+    @Operation(summary = "Create a user", description = "Create a new user")
     public ResponseEntity<User> createUser(@RequestBody User userRequest) {
         try {
             User createdUser = service.createUser(
@@ -85,8 +82,7 @@ public class UserController {
     }
 
     @PutMapping("/{uniqueId}")
-    // @Operation(summary = "Update a user", description = "Update an existing
-    // user")
+    @Operation(summary = "Update a user", description = "Update an existing user")
     public ResponseEntity<Void> updateUser(@PathVariable String uniqueId, @RequestBody User user) {
         try {
             this.service.updateUser(uniqueId, user);
@@ -97,16 +93,14 @@ public class UserController {
     }
 
     @GetMapping("/company/{companyId}")
-    // @Operation(summary = "Get users by companyId", description = "Retrieve a user
-    // by companyId")
+    @Operation(summary = "Get users by companyId", description = "Retrieve a user by companyId")
     public ResponseEntity<List<UserDTO>> getUsersByCompanyId(@PathVariable String companyId) {
         List<UserDTO> users = service.getUsersByCompanyId(companyId);
         return ResponseEntity.ok(users);
     }
 
     @PostMapping("/login")
-    // @Operation(summary = "Login user", description = "Authenticate user with
-    // credentials")
+    @Operation(summary = "Login user", description = "Authenticate user with credentials")
     public ResponseEntity<?> login(@RequestBody User dto) {
         try {
             User loggedUser = service.login(dto);
@@ -119,9 +113,8 @@ public class UserController {
         }
     }
 
-    // @Operation(summary = "Change Password", description = "Change password for a
-    // user")
     @PutMapping("/change-password")
+    @Operation(summary = "Change Password", description = "Change password for a user")
     public ResponseEntity<String> changePassword(@RequestParam String userName, @RequestParam String oldPassword,
             @RequestParam String newPassword) {
         try {
@@ -132,9 +125,8 @@ public class UserController {
         }
     }
 
-    // @Operation(summary = "Reset Password", description = "Reset password from
-    // user")
     @PutMapping("/reset-password")
+    @Operation(summary = "Reset Password", description = "Reset password from user")
     public ResponseEntity<String> resetPassword(@RequestParam String userName, @RequestParam String email) {
         try {
             String message = this.service.resetPassword(userName, email);
