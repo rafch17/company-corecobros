@@ -96,6 +96,7 @@ public class CompanyService {
         if (this.companyRepository.findByRuc(company.getRuc()) != null) {
             throw new RuntimeException("Ya existe una compañía con el RUC: " + company.getRuc());
         }
+
         boolean accountExists = this.companyRepository.findAll().stream()
                 .flatMap(c -> c.getAccounts().stream())
                 .anyMatch(account -> account.getCodeInternalAccount()
@@ -109,15 +110,20 @@ public class CompanyService {
             uniqueId = uniqueIdGenerator.getUniqueId();
             uniqueIdExists = companyRepository.findByUniqueId(uniqueId) != null;
         } while (uniqueIdExists);
+
         log.info("Creacion de compania: {}", company);
         company.setUniqueId(uniqueId);
+
         for (Account account : company.getAccounts()) {
             account.setUniqueId(uniqueId);
         }
+
         for (Servicee servicee : company.getServicees()) {
             servicee.setUniqueId(uniqueId);
         }
+
         Company savedCompany = this.companyRepository.save(company);
+
         log.info("Compania creada: {}", savedCompany);
         return savedCompany;
     }
@@ -175,6 +181,17 @@ public class CompanyService {
         company.getAccounts().add(account);
         this.companyRepository.save(company);
         return "Cuenta añadida con éxito";
+    }
+
+    public String getCompanyNameByAccountId(String accountId) {
+        log.info("Buscando compañía por accountId: {}", accountId);
+        List<Company> companies = this.companyRepository.findByAccountsUniqueId(accountId);
+        if (companies.isEmpty()) {
+            log.info("No se encontró compañía con el accountId: {}", accountId);
+            throw new RuntimeException("No se encontró compañía con el accountId: " + accountId);
+        }
+        Company foundCompany = companies.get(0); // Asumimos que el accountId es único en todas las compañías
+        return foundCompany.getCompanyName();
     }
 
     public List<Servicee> getServicesByCompanyId(String companyId) {

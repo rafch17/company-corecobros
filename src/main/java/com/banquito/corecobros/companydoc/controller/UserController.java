@@ -20,11 +20,11 @@ import com.banquito.corecobros.companydoc.service.UserService;
 
 //import io.swagger.v3.oas.annotations.Operation;
 //import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
+    RequestMethod.PUT })
 @RestController
 @RequestMapping("/api/v1/users")
-@CrossOrigin(origins = "*")
 // @Tag(name = "User", description = "Endpoints for managing users")
 public class UserController {
 
