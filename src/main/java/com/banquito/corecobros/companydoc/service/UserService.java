@@ -102,14 +102,16 @@ public class UserService {
         user.setUser(userName);
         user.setPassword(md5Password);
         user.setCreateDate(LocalDate.now());
+        user.setFirstLogin(true);
         user.setEmail(email);
         user.setRole(role);
         user.setStatus(status);
-        user.setUserType(userType); 
+        user.setUserType(userType);
         this.userRepository.save(user);
-        String logMessage = String.format("Usuario creado con nombre de usuario: %s, contraseña: %s", userName, password);
+        String logMessage = String.format("Usuario creado con nombre de usuario: %s, contraseña: %s", userName,
+                password);
         log.info(logMessage);
-        user.setMessage(logMessage); 
+        user.setMessage(logMessage);
         return user;
     }
 
@@ -138,28 +140,25 @@ public class UserService {
 
     public User login(User dto) {
         String errorMessage = "Usuario o contraseña incorrecta";
-        System.out.println("Usuario: " + dto);
-    
+        log.info("Usuario: {}", dto);
         if (dto.getUser() != null && dto.getPassword() != null && dto.getUser().length() > 3
                 && dto.getPassword().length() > 5) {
-            System.out.println("El usuario y contraseña coinciden");
+            log.info("El usuario y contraseña coinciden");
             User user = this.userRepository.findByUser(dto.getUser());
-    
             if (user != null) {
-                System.out.println("Usuario encontrado: " + user);
+                log.info("Usuario encontrado: {}", user);
                 String md5 = DigestUtils.md5Hex(dto.getPassword());
-                System.out.println("MD5 de la contraseña proporcionada: " + md5);
+                log.info("MD5 de la contraseña proporcionada: {}", md5);
                 if (user.getPassword().equals(md5)) {
                     user.setLastConnection(LocalDateTime.now());
-                    this.userRepository.save(user);
-    
                     if ("ACT".equals(user.getStatus())) {
-                        System.out.println("Usuario activo");
+                        log.info("Usuario activo");
                         if (user.isFirstLogin()) {
                             errorMessage = "Primera vez que inicia sesión. Debe cambiar su contraseña.";
-                            System.out.println(errorMessage);
+                            log.info(errorMessage);
                             throw new RuntimeException(errorMessage);
                         }
+                        this.userRepository.save(user);
                         return user;
                     } else {
                         errorMessage = "Usuario no es activo";
@@ -167,25 +166,25 @@ public class UserService {
                 }
             }
         }
-        System.out.println("Error: " + errorMessage);
+        log.error("Error: {}", errorMessage);
         throw new RuntimeException(errorMessage);
     }
-    
 
-    public void changePassword(UserDTO userDTO) {
-        User user = this.userRepository.findByUser(userDTO.getUser());
+    public void changePassword(String userName, String oldPassword, String newPassword) {
+        User user = this.userRepository.findByUser(userName);
         if (user == null) {
-            throw new RuntimeException("No existe el usuario: " + userDTO.getUser());
+            throw new RuntimeException("Usuario no encontrado.");
         }
-        if (!user.getPassword().equals(DigestUtils.md5Hex(userDTO.getPassword()))) {
-            throw new RuntimeException("Contraseña actual incorrecta.");
+        String md5OldPassword = DigestUtils.md5Hex(oldPassword);
+        if (!user.getPassword().equals(md5OldPassword)) {
+            throw new RuntimeException("La contraseña actual es incorrecta.");
         }
-        user.setPassword(DigestUtils.md5Hex(userDTO.getPassword()));
+        String md5NewPassword = DigestUtils.md5Hex(newPassword);
+        user.setPassword(md5NewPassword);
+        user.setFirstLogin(false);
         this.userRepository.save(user);
-        Company company = this.companyRepository.findById(user.getCompanyId()).orElse(null);
-        if (company != null) {
-            log.info("Nombre de la empresa asociada al usuario: {}", company.getCompanyName());
-        }
+        String logMessage = String.format("Contraseña actualizada para el usuario: %s", userName);
+        log.info(logMessage);
     }
 
     public void generatePassword(String userName) {
@@ -203,7 +202,7 @@ public class UserService {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
-    public void resetPassword(String userName, String email) {
+    public String resetPassword(String userName, String email) {
         User user = this.userRepository.findByUser(userName);
         if (user == null) {
             throw new RuntimeException("Usuario no encontrado.");
@@ -212,22 +211,14 @@ public class UserService {
             log.error("El correo electrónico no coincide para el usuario: {}", userName);
             throw new RuntimeException("Correo electrónico incorrecto.");
         }
-        String resetCode = generate8DigitCode();
-        user.setResetCode(resetCode);
+        String newPassword = generateRandomPassword();
+        user.setPassword(DigestUtils.md5Hex(newPassword));
         this.userRepository.save(user);
-        log.info("Código de restablecimiento generado para el usuario {}: {}", userName, resetCode);
-    }
-
-    private String generate8DigitCode() {
-        return String.format("%08d", (int) (Math.random() * 1000000));
-    }
-
-    public boolean validateResetCode(String userName, String resetCode) {
-        User user = this.userRepository.findByUser(userName);
-        if (user == null || !resetCode.equals(user.getResetCode())) {
-            throw new RuntimeException("Código de restablecimiento inválido.");
-        }
-        return true;
+        String logMessage = String.format("Contraseña reseteada para el usuario: %s. Nueva contraseña: %s", userName,
+                newPassword);
+        log.info(logMessage);
+        user.setMessage(logMessage);
+        return logMessage;
     }
 
 }

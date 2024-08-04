@@ -35,7 +35,6 @@ public class User {
     @Indexed
     private String user;
     private String password;
-    private String resetCode;
     private LocalDate createDate;
     @Indexed
     private String email;
@@ -45,8 +44,6 @@ public class User {
     private int failedAttempt;
     private String userType;
     private boolean isFirstLogin;
-    private String oldPassword;
-    private String newPassword;
     private String message;
 
     @Override
