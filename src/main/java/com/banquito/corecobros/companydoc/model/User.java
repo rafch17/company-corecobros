@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,13 +32,16 @@ public class User {
     private String companyId;
     @Indexed(unique = true)
     private String uniqueId;
+    @NotBlank
     private String firstName;
+    @NotBlank
     private String lastName;
     @Indexed
     private String user;
     private String password;
     private LocalDate createDate;
     @Indexed
+    @Email
     private String email;
     private String role;
     private String status;

@@ -2,6 +2,7 @@ package com.banquito.corecobros.companydoc.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -82,7 +83,7 @@ public class CompanyController {
     public ResponseEntity<Company> createCompany(@RequestBody Company company) {
         try {
             Company createdCompany = this.service.create(company);
-            return ResponseEntity.status(201).body(createdCompany);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdCompany);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }

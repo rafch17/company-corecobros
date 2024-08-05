@@ -8,6 +8,8 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,11 +32,15 @@ public class Company {
     @Indexed
     private String commissionId;
     @Indexed(unique = true)
+    @NotBlank
     private String ruc;
     @Indexed
+    @NotBlank
     private String companyName;
     private String status;
+    @Valid
     private List<Account> accounts;
+    @Valid
     private List<Servicee> servicees;
 
     @Override
