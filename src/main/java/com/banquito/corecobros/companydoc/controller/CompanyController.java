@@ -100,7 +100,7 @@ public class CompanyController {
         }
     }
 
-    @GetMapping("/{companyId}/accounts")
+    @GetMapping("/accounts/{companyId}")
     @Operation(summary = "Get account by companyId", description = "Retrieve a account by its companyId")
     public ResponseEntity<List<Account>> getAccountsByCompanyId(@PathVariable String companyId) {
         try {
@@ -111,7 +111,7 @@ public class CompanyController {
         }
     }
 
-    @GetMapping("/accounts/code/{codeInternalAccount}")
+    @GetMapping("/account/code/{codeInternalAccount}")
     @Operation(summary = "Get company by codeInternalAccount", description = "Retrieve a company by its codeInternalAccount")
     public ResponseEntity<CompanyDTO> getCompanyByCodeInternalAccount(@PathVariable String codeInternalAccount) {
         if (codeInternalAccount == null || codeInternalAccount.trim().isEmpty()) {
@@ -125,7 +125,7 @@ public class CompanyController {
         }
     }
 
-    @PostMapping("/{companyId}/accounts")
+    @PostMapping("/account/{companyId}")
     @Operation(summary = "Add an account by companyId", description = "Add a new account to company")
     public ResponseEntity<String> addAccountToCompany(@PathVariable String companyId, @RequestBody Account account) {
         String result = this.service.addAccountToCompany(companyId, account);
@@ -147,14 +147,14 @@ public class CompanyController {
         }
     }
 
-    @GetMapping("/{companyId}/services")
+    @GetMapping("/service/{companyId}")
     @Operation(summary = "Get service by companyId", description = "Retrieve a service by its companyId")
     public ResponseEntity<List<Servicee>> getServicesByCompanyId(@PathVariable String companyId) {
         List<Servicee> services = this.service.getServicesByCompanyId(companyId);
         return ResponseEntity.ok(services);
     }
 
-    @PostMapping("/{companyId}/services")
+    @PostMapping("/service/{companyId}")
     @Operation(summary = "Add an service by companyId", description = "Add a new service to company")
     public ResponseEntity<String> addServiceToCompany(@PathVariable String companyId, @RequestBody Servicee servicee) {
         String result = this.service.addServiceToCompany(companyId, servicee);
@@ -165,7 +165,7 @@ public class CompanyController {
         }
     }
 
-    @GetMapping("/services/name/{name}")
+    @GetMapping("/service/name/{name}")
     @Operation(summary = "Get company by service name", description = "Retrieve a company by its service name")
     public ResponseEntity<CompanyDTO> getCompanyByServiceesName(@PathVariable String name) {
         if (name == null || name.trim().isEmpty()) {

@@ -52,7 +52,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("companyName/{user}")
+    @GetMapping("company-name/{user}")
     @Operation(summary = "Get company by user", description = "Retrieve a company by its user")
     public ResponseEntity<String> getCompanyNameByUser(@PathVariable String user) {
         try {
