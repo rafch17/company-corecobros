@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
     RequestMethod.PUT })
 @RestController
-@RequestMapping("/user-microservice/api/v1/users")
+@RequestMapping("/company-microservice/api/v1/users")
 @Tag(name = "User", description = "Endpoints for managing users")
 public class UserController {
 
