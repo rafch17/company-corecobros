@@ -1,4 +1,16 @@
 {
-    "java.configuration.updateBuildConfiguration": "automatic",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "disabled",
+    "java.jdt.ls.java.home": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.3.9-hotspot",
+    "maven.executable.path": "C:\\Program Files\\Dev_Programs\\apache-maven-3.9.4\\bin\\mvn",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.3.9-hotspot",
+            "default": true
+        }
+    ],
+    "editor.occurrencesHighlight": "off",
+    "editor.selectionHighlight": false
+
 }
