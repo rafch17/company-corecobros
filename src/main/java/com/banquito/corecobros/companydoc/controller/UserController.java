@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-    RequestMethod.PUT })
+        RequestMethod.PUT })
 @RestController
 @RequestMapping("/company-microservice/api/v1/users")
 @Tag(name = "User", description = "Endpoints for managing users")
@@ -52,14 +52,14 @@ public class UserController {
         }
     }
 
-    @GetMapping("company-name/{user}")
+    @GetMapping("/company-name/{user}")
     @Operation(summary = "Get company by user", description = "Retrieve a company by its user")
     public ResponseEntity<String> getCompanyNameByUser(@PathVariable String user) {
         try {
             String companyName = service.getCompanyNameByUser(user);
             return ResponseEntity.ok(companyName);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -93,7 +93,7 @@ public class UserController {
     }
 
     @GetMapping("/company/{companyId}")
-    @Operation(summary = "Get users by companyId", description = "Retrieve a user by companyId")
+    @Operation(summary = "Get users by companyId", description = "Retrieve users by companyId")
     public ResponseEntity<List<UserDTO>> getUsersByCompanyId(@PathVariable String companyId) {
         List<UserDTO> users = service.getUsersByCompanyId(companyId);
         return ResponseEntity.ok(users);
@@ -101,15 +101,15 @@ public class UserController {
 
     @PostMapping("/login")
     @Operation(summary = "Login user", description = "Authenticate user with credentials")
-    public ResponseEntity<?> login(@RequestBody User dto) {
+    public ResponseEntity<User> login(@RequestBody User dto) {
         try {
             User loggedUser = service.login(dto);
             return ResponseEntity.ok(loggedUser);
         } catch (RuntimeException e) {
             if ("Primera vez que inicia sesión. Debe cambiar su contraseña.".equals(e.getMessage())) {
-                return ResponseEntity.status(403).body(e.getMessage());
+                return ResponseEntity.status(403).body(null);
             }
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -119,20 +119,20 @@ public class UserController {
             @RequestParam String newPassword) {
         try {
             String message = this.service.changePassword(userName, oldPassword, newPassword);
-            return ResponseEntity.ok(message); 
+            return ResponseEntity.ok(message);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 
     @PutMapping("/reset-password")
-    @Operation(summary = "Reset Password", description = "Reset password from user")
+    @Operation(summary = "Reset Password", description = "Reset password for a user")
     public ResponseEntity<String> resetPassword(@RequestParam String userName, @RequestParam String email) {
         try {
             String message = this.service.resetPassword(userName, email);
             return ResponseEntity.ok(message);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 

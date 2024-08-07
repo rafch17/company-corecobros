@@ -67,7 +67,7 @@ public class CompanyController {
         }
     }
 
-    @GetMapping("/commision/{commissionId}")
+    @GetMapping("/commission/{commissionId}")
     @Operation(summary = "Get company by commissionId", description = "Retrieve a company by its commissionId")
     public ResponseEntity<CompanyDTO> getCommissionIdByUniqueId(@PathVariable String commissionId) {
         try {
@@ -114,8 +114,8 @@ public class CompanyController {
         }
     }
 
-    @GetMapping("/accounts/{companyId}")
-    @Operation(summary = "Get account by companyId", description = "Retrieve a account by its companyId")
+    @GetMapping("/{companyId}/accounts-by-company")
+    @Operation(summary = "Get accounts by companyId", description = "Retrieve accounts by companyId")
     public ResponseEntity<List<Account>> getAccountsByCompanyId(@PathVariable String companyId) {
         try {
             List<Account> accounts = this.service.getAccountsByCompanyId(companyId);
@@ -139,7 +139,7 @@ public class CompanyController {
         }
     }
 
-    @PostMapping("/account/{companyId}")
+    @PostMapping("/{companyId}/account")
     @Operation(summary = "Add an account by companyId", description = "Add a new account to company")
     public ResponseEntity<String> addAccountToCompany(@PathVariable String companyId, @RequestBody Account account) {
         String result = this.service.addAccountToCompany(companyId, account);
@@ -161,15 +161,15 @@ public class CompanyController {
         }
     }
 
-    @GetMapping("/service/{companyId}")
-    @Operation(summary = "Get service by companyId", description = "Retrieve a service by its companyId")
+    @GetMapping("/services-all/{companyId}")
+    @Operation(summary = "Get services by companyId", description = "Retrieve services by companyId")
     public ResponseEntity<List<Servicee>> getServicesByCompanyId(@PathVariable String companyId) {
         List<Servicee> services = this.service.getServicesByCompanyId(companyId);
         return ResponseEntity.ok(services);
     }
 
-    @PostMapping("/service/{companyId}")
-    @Operation(summary = "Add an service by companyId", description = "Add a new service to company")
+    @PostMapping("/{companyId}/service")
+    @Operation(summary = "Add a service by companyId", description = "Add a new service to company")
     public ResponseEntity<String> addServiceToCompany(@PathVariable String companyId, @RequestBody Servicee servicee) {
         String result = this.service.addServiceToCompany(companyId, servicee);
         if ("Servicio añadido con éxito".equals(result)) {
