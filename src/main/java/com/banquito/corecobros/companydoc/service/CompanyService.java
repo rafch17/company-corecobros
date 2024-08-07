@@ -147,6 +147,21 @@ public class CompanyService {
         log.info("Se actualizó la compañía: {}", updatedCompany);
     }
 
+    public String getCodeInternalAccountByUniqueId(String uniqueId) {
+        log.info("Buscando codeInternalAccount por uniqueId: {}", uniqueId);
+        List<Company> companies = this.companyRepository.findByAccountsUniqueId(uniqueId);
+        if (companies.isEmpty()) {
+            log.info("No se encontró compañía con el uniqueId: {}", uniqueId);
+            throw new RuntimeException("No se encontró compañía con el uniqueId: " + uniqueId);
+        }
+        Company company = companies.get(0);
+        Account account = company.getAccounts().stream()
+                                  .filter(acc -> acc.getUniqueId().equals(uniqueId))
+                                  .findFirst()
+                                  .orElseThrow(() -> new RuntimeException("No se encontró cuenta con el uniqueId: " + uniqueId));
+        return account.getCodeInternalAccount();
+    }
+
     public List<Account> getAccountsByCompanyId(String companyId) {
         log.info("Va a retornar todas las cuentas para la compañía con ID: {}", companyId);
         Company company = this.companyRepository.findByUniqueId(companyId);
