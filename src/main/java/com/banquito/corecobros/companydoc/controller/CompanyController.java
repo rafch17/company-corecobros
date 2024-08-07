@@ -100,6 +100,20 @@ public class CompanyController {
         }
     }
 
+    @GetMapping("/account/uniqueId/{uniqueId}")
+    @Operation(summary = "Get codeInternalAccount by uniqueId", description = "Retrieve a codeInternalAccount by its uniqueId")
+    public ResponseEntity<String> getCodeInternalAccountByUniqueId(@PathVariable String uniqueId) {
+        if (uniqueId == null || uniqueId.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("El uniqueId no puede estar vacío");
+        }
+        try {
+            String codeInternalAccount = this.service.getCodeInternalAccountByUniqueId(uniqueId);
+            return ResponseEntity.ok(codeInternalAccount);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/accounts/{companyId}")
     @Operation(summary = "Get account by companyId", description = "Retrieve a account by its companyId")
     public ResponseEntity<List<Account>> getAccountsByCompanyId(@PathVariable String companyId) {
