@@ -4,7 +4,15 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.banquito.corecobros.companydoc.dto.CodeInternalAccountDTO;
 import com.banquito.corecobros.companydoc.dto.CompanyDTO;
@@ -16,8 +24,7 @@ import com.banquito.corecobros.companydoc.service.CompanyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-        RequestMethod.PUT })
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT })
 @RestController
 @RequestMapping("/company-microservice/api/v1/companies")
 @Tag(name = "Company", description = "Endpoints for managing companies")
@@ -35,10 +42,10 @@ public class CompanyController {
         return ResponseEntity.ok(this.service.obtainAllCompanies());
     }
 
-    @GetMapping("/{uniqueId}")
+    @GetMapping("/{companyId}")
     @Operation(summary = "Get company by uniqueId", description = "Retrieve a company by its uniqueId")
-    public ResponseEntity<CompanyDTO> getCompanyByUniqueId(@PathVariable String uniqueId) {
-        CompanyDTO company = service.getCompanyByUniqueId(uniqueId);
+    public ResponseEntity<CompanyDTO> getCompanyByUniqueId(@PathVariable String companyId) {
+        CompanyDTO company = service.getCompanyByUniqueId(companyId);
         if (company != null) {
             return ResponseEntity.ok(company);
         } else {
@@ -90,18 +97,18 @@ public class CompanyController {
         }
     }
 
-    @PutMapping("/{uniqueId}")
+    @PutMapping("/{companyId}")
     @Operation(summary = "Update a company", description = "Update an existing company")
-    public ResponseEntity<Void> updateCompany(@PathVariable String uniqueId, @RequestBody Company company) {
+    public ResponseEntity<Void> updateCompany(@PathVariable String companyId, @RequestBody Company company) {
         try {
-            this.service.updateCompany(uniqueId, company);
+            this.service.updateCompany(companyId, company);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @GetMapping("/account/uniqueId/{uniqueId}")
+    @GetMapping("/account/unique-id/{uniqueId}")
     @Operation(summary = "Get codeInternalAccount by uniqueId", description = "Retrieve codeInternalAccount by its uniqueId")
     public ResponseEntity<CodeInternalAccountDTO> getCodeInternalAccountByUniqueId(@PathVariable String uniqueId) {
         if (uniqueId == null || uniqueId.trim().isEmpty()) {
@@ -143,7 +150,7 @@ public class CompanyController {
         }
     }
 
-    @PostMapping("/{companyId}/account")
+    @PostMapping("/{companyId}/accounts")
     @Operation(summary = "Add an account to a company", description = "Add a new account to a company")
     public ResponseEntity<String> addAccountToCompany(@PathVariable String companyId, @RequestBody Account account) {
         String result = this.service.addAccountToCompany(companyId, account);
@@ -176,7 +183,7 @@ public class CompanyController {
         }
     }
 
-    @PostMapping("/service/{companyId}")
+    @PostMapping("/{companyId}/services")
     @Operation(summary = "Add a service to a company", description = "Add a new service to a company")
     public ResponseEntity<String> addServiceToCompany(@PathVariable String companyId, @RequestBody Servicee servicee) {
         String result = this.service.addServiceToCompany(companyId, servicee);
@@ -200,5 +207,4 @@ public class CompanyController {
             return ResponseEntity.badRequest().body(null);
         }
     }
-
 }
