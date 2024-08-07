@@ -34,18 +34,17 @@ public class CompanyService {
     public List<CompanyDTO> obtainAllCompanies() {
         log.info("Va a retornar todas las compañías");
         List<Company> companies = this.companyRepository.findAll();
-        return companies.stream().map(c -> this.companyMapper.toDTO(c))
-                .collect(Collectors.toList());
+        return companies.stream().map(this.companyMapper::toDTO).collect(Collectors.toList());
     }
 
     public CompanyDTO getCompanyByUniqueId(String uniqueId) {
-        log.info("Va a buscar el usuario con uniqueId: {}", uniqueId);
+        log.info("Va a buscar la compañía con uniqueId: {}", uniqueId);
         Company company = this.companyRepository.findByUniqueId(uniqueId);
         if (company == null) {
-            log.info("No se encontró el usuario con uniqueId: {}", uniqueId);
+            log.info("No se encontró la compañía con uniqueId: {}", uniqueId);
             return null;
         }
-        log.info("Se encontró el usuario: {}", company);
+        log.info("Se encontró la compañía: {}", company);
         return this.companyMapper.toDTO(company);
     }
 
@@ -57,7 +56,7 @@ public class CompanyService {
                 log.info("Se encontró la compañía: {}", company);
                 return this.companyMapper.toDTO(company);
             } else {
-                throw new RuntimeException("No existe compañía con el RUC:" + ruc);
+                throw new RuntimeException("No existe compañía con el RUC: " + ruc);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error al buscar la compañía con RUC: " + ruc, e);
@@ -68,8 +67,7 @@ public class CompanyService {
         log.info("Va a buscar las compañías con nombre: {}", companyName);
         try {
             List<Company> companies = this.companyRepository.findByCompanyNameContainingIgnoreCase(companyName);
-            return companies.stream().map(c -> this.companyMapper.toDTO(c))
-                    .collect(Collectors.toList());
+            return companies.stream().map(this.companyMapper::toDTO).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error al buscar las compañías con nombre: {}", companyName, e);
             throw new RuntimeException("Error al buscar las compañías con nombre: " + companyName, e);
@@ -115,7 +113,7 @@ public class CompanyService {
             uniqueIdExists = companyRepository.findByUniqueId(uniqueId) != null;
         } while (uniqueIdExists);
 
-        log.info("Creacion de compania: {}", company);
+        log.info("Creacion de compañia: {}", company);
         company.setUniqueId(uniqueId);
 
         for (Account account : company.getAccounts()) {
@@ -128,7 +126,7 @@ public class CompanyService {
 
         Company savedCompany = this.companyRepository.save(company);
 
-        log.info("Compania creada: {}", savedCompany);
+        log.info("Compañía creada: {}", savedCompany);
         return savedCompany;
     }
 
@@ -156,9 +154,9 @@ public class CompanyService {
         }
         Company company = companies.get(0);
         Account account = company.getAccounts().stream()
-                                  .filter(acc -> acc.getUniqueId().equals(uniqueId))
-                                  .findFirst()
-                                  .orElseThrow(() -> new RuntimeException("No se encontró cuenta con el uniqueId: " + uniqueId));
+                .filter(acc -> acc.getUniqueId().equals(uniqueId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No se encontró cuenta con el uniqueId: " + uniqueId));
         return account.getCodeInternalAccount();
     }
 
@@ -169,11 +167,11 @@ public class CompanyService {
     }
 
     public CompanyDTO getCompanyByCodeInternalAccount(String codeInternalAccount) {
-        log.info("Buscando compañía por numero de cuenta interno: {}", codeInternalAccount);
+        log.info("Buscando compañía por número de cuenta interno: {}", codeInternalAccount);
         List<Company> companies = this.companyRepository.findByAccountsCodeInternalAccount(codeInternalAccount);
         if (companies.isEmpty()) {
-            log.info("No se encontró compañía con el numero de cuenta: {}", codeInternalAccount);
-            throw new RuntimeException("No se encontró compañía con el numero de cuenta: " + codeInternalAccount);
+            log.info("No se encontró compañía con el número de cuenta: {}", codeInternalAccount);
+            throw new RuntimeException("No se encontró compañía con el número de cuenta: " + codeInternalAccount);
         }
         Company foundCompany = companies.get(0);
         return this.companyMapper.toDTO(foundCompany);
@@ -209,7 +207,7 @@ public class CompanyService {
             log.info("No se encontró compañía con el accountId: {}", accountId);
             throw new RuntimeException("No se encontró compañía con el accountId: " + accountId);
         }
-        Company foundCompany = companies.get(0); // Asumimos que el accountId es único en todas las compañías
+        Company foundCompany = companies.get(0); 
         return foundCompany.getCompanyName();
     }
 
@@ -219,14 +217,27 @@ public class CompanyService {
         return company.getServicees();
     }
 
-    public String addServiceToCompany(String companyId, Servicee servicee) {
+    public String addServiceToCompany(String companyId, Servicee service) {
         Company company = this.companyRepository.findByUniqueId(companyId);
-        if (company.getServicees().stream().anyMatch(s -> s.getUniqueId().equals(servicee.getUniqueId()))) {
+        if (company.getServicees().stream().anyMatch(s -> s.getUniqueId().equals(service.getUniqueId()))) {
             return "El servicio ya existe en la compañía";
         }
-        company.getServicees().add(servicee);
+        company.getServicees().add(service);
         this.companyRepository.save(company);
         return "Servicio añadido con éxito";
+    }
+
+    public List<Servicee> getServicesByCompany(String companyIdentifier) {
+        log.info("Buscando servicios para la compañía con ID o nombre: {}", companyIdentifier);
+        List<Company> companies = this.companyRepository.findByCompanyNameContainingIgnoreCase(companyIdentifier);
+        if (companies.isEmpty()) {
+            Company company = this.companyRepository.findByUniqueId(companyIdentifier);
+            if (company != null) {
+                return company.getServicees();
+            }
+            throw new RuntimeException("No se encontró la compañía con ID o nombre: " + companyIdentifier);
+        }
+        return companies.stream().flatMap(c -> c.getServicees().stream()).collect(Collectors.toList());
     }
 
     public CompanyDTO getCompanyByServiceesName(String name) {

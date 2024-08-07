@@ -10,6 +10,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.banquito.corecobros.companydoc.dto.PasswordDTO;
 import com.banquito.corecobros.companydoc.dto.UserDTO;
 import com.banquito.corecobros.companydoc.model.Company;
 import com.banquito.corecobros.companydoc.model.User;
@@ -36,47 +37,44 @@ public class UserService {
     }
 
     public List<UserDTO> obtainAllUsers() {
-        log.info("Va a retornar todos los usuarios");
+        log.info("Fetching all users");
         List<User> users = this.userRepository.findAll();
-        return users.stream().map(u -> this.mapper.toDTO(u))
-                .collect(Collectors.toList());
+        return users.stream().map(this.mapper::toDTO).collect(Collectors.toList());
     }
 
     public UserDTO getUserByUniqueId(String uniqueId) {
-        log.info("Va a buscar el usuario con uniqueId: {}", uniqueId);
+        log.info("Fetching user with uniqueId: {}", uniqueId);
         User user = this.userRepository.findByUniqueId(uniqueId);
         if (user == null) {
-            log.info("No se encontró el usuario con uniqueId: {}", uniqueId);
+            log.info("User with uniqueId {} not found", uniqueId);
             return null;
         }
-        log.info("Se encontró el usuario: {}", user);
         return this.mapper.toDTO(user);
     }
 
     public User getUser(String user) {
         User usern = this.userRepository.findByUser(user);
-        if (user != null) {
-            return usern;
-        } else {
-            throw new RuntimeException("No existe usuario con el userName:" + user);
+        if (usern == null) {
+            throw new RuntimeException("User with username " + user + " does not exist.");
         }
+        return usern;
     }
 
     public String getCompanyNameByUser(String user) {
-        log.info("Va a buscar la empresa para el usuario: {}", user);
+        log.info("Fetching company for user: {}", user);
         User userEntity = this.userRepository.findByUser(user);
         if (userEntity == null) {
-            throw new RuntimeException("No se encontró el usuario con user: " + user);
+            throw new RuntimeException("User with username " + user + " not found.");
         }
         Company company = this.companyRepository.findByUniqueId(userEntity.getCompanyId());
         if (company == null) {
-            throw new RuntimeException("No se encontró la empresa para el user: " + user);
+            throw new RuntimeException("Company for user " + user + " not found.");
         }
         return company.getCompanyName();
     }
 
     public User createUser(String companyId, String firstName, String lastName,
-            String email, String role, String status, String userType) {
+                           String email, String role, String status, String userType) {
 
         UniqueIdGeneration uniqueIdGenerator = new UniqueIdGeneration();
         String uniqueId;
@@ -92,7 +90,7 @@ public class UserService {
         String md5Password = DigestUtils.md5Hex(password);
 
         if (this.userRepository.findByUser(userName) != null) {
-            throw new RuntimeException("El nombre de usuario ya existe.");
+            throw new RuntimeException("Username already exists.");
         }
         User user = new User();
         user.setCompanyId(companyId);
@@ -108,18 +106,17 @@ public class UserService {
         user.setStatus(status);
         user.setUserType(userType);
         this.userRepository.save(user);
-        String logMessage = String.format("Usuario creado con nombre de usuario: %s, contraseña: %s", userName,
-                password);
+        String logMessage = String.format("User created with username: %s, password: %s", userName, password);
         log.info(logMessage);
         user.setMessage(logMessage);
         return user;
     }
 
     public void updateUser(String uniqueId, User userDetails) {
-        log.info("Va a actualizar el usuario con ID: {}", uniqueId);
+        log.info("Updating user with ID: {}", uniqueId);
         User existingUser = this.userRepository.findByUniqueId(uniqueId);
         if (existingUser == null) {
-            throw new RuntimeException("No se encontró la compañía con ID: " + uniqueId);
+            throw new RuntimeException("User with ID " + uniqueId + " not found.");
         }
         existingUser.setCompanyId(userDetails.getCompanyId());
         existingUser.setFirstName(userDetails.getFirstName());
@@ -129,98 +126,84 @@ public class UserService {
         existingUser.setStatus(userDetails.getStatus());
         existingUser.setUserType(userDetails.getUserType());
         User updatedUser = this.userRepository.save(existingUser);
-        log.info("Se actualizó el usuario: {}", updatedUser);
+        log.info("User updated: {}", updatedUser);
     }
 
     public List<UserDTO> getUsersByCompanyId(String companyId) {
-        log.info("Va a retornar todos los usuarios para la compañía con ID: {}", companyId);
+        log.info("Fetching all users for company with ID: {}", companyId);
         List<User> users = this.userRepository.findByCompanyId(companyId);
-        return users.stream().map(u -> this.mapper.toDTO(u)).collect(Collectors.toList());
+        return users.stream().map(this.mapper::toDTO).collect(Collectors.toList());
     }
 
     public User login(User dto) {
-        String errorMessage = "Usuario o contraseña incorrecta";
-        log.info("Usuario: {}", dto);
+        String errorMessage = "Incorrect username or password";
+        log.info("Logging in user: {}", dto);
         if (dto.getUser() != null && dto.getPassword() != null && dto.getUser().length() > 3
                 && dto.getPassword().length() > 5) {
-            log.info("El usuario y contraseña coinciden");
             User user = this.userRepository.findByUser(dto.getUser());
             if (user != null) {
-                log.info("Usuario encontrado: {}", user);
                 String md5 = DigestUtils.md5Hex(dto.getPassword());
-                log.info("MD5 de la contraseña proporcionada: {}", md5);
                 if (user.getPassword().equals(md5)) {
                     user.setLastConnection(LocalDateTime.now());
                     if ("ACT".equals(user.getStatus())) {
-                        log.info("Usuario activo");
                         if (user.isFirstLogin()) {
-                            errorMessage = "Primera vez que inicia sesión. Debe cambiar su contraseña.";
-                            log.info(errorMessage);
+                            errorMessage = "First login. Must change password.";
                             throw new RuntimeException(errorMessage);
                         }
                         this.userRepository.save(user);
                         return user;
                     } else {
-                        errorMessage = "Usuario no es activo";
+                        errorMessage = "User is not active";
                     }
                 }
             }
         }
-        log.error("Error: {}", errorMessage);
         throw new RuntimeException(errorMessage);
-    }
-
-    public String changePassword(String userName, String oldPassword, String newPassword) {
-        User user = this.userRepository.findByUser(userName);
-        if (user == null) {
-            throw new RuntimeException("Usuario no encontrado.");
-        }
-        String md5OldPassword = DigestUtils.md5Hex(oldPassword);
-        if (!user.getPassword().equals(md5OldPassword)) {
-            throw new RuntimeException("La contraseña actual es incorrecta.");
-        }
-        String md5NewPassword = DigestUtils.md5Hex(newPassword);
-        user.setPassword(md5NewPassword);
-        user.setFirstLogin(false);
-        this.userRepository.save(user);
-        String logMessage = String.format("Contraseña actualizada para el usuario: %s. Nueva contraseña: %s", userName,
-                newPassword);
-        log.info(logMessage);
-        return logMessage;
     }
 
     public void generatePassword(String userName) {
         User user = this.userRepository.findByUser(userName);
         if (user == null) {
-            throw new RuntimeException("Usuario no encontrado.");
+            throw new RuntimeException("User not found.");
         }
         String password = generateRandomPassword();
         user.setPassword(DigestUtils.md5Hex(password));
         this.userRepository.save(user);
-        log.info("Contraseña generada para el usuario {}: {}", userName, password);
+        log.info("Generated password for user {}: {}", userName, password);
     }
 
     private String generateRandomPassword() {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
+    public String changePassword(PasswordDTO passwordDTO) {
+        User user = this.userRepository.findByUser(passwordDTO.getUser());
+        if (user == null) {
+            throw new RuntimeException("User not found.");
+        }
+        String md5OldPassword = DigestUtils.md5Hex(passwordDTO.getOldPassword());
+        if (!user.getPassword().equals(md5OldPassword)) {
+            throw new RuntimeException("Current password is incorrect.");
+        }
+        String md5NewPassword = DigestUtils.md5Hex(passwordDTO.getNewPassword());
+        user.setPassword(md5NewPassword);
+        user.setFirstLogin(false);
+        this.userRepository.save(user);
+        return "Password updated successfully";
+    }
+
     public String resetPassword(String userName, String email) {
         User user = this.userRepository.findByUser(userName);
         if (user == null) {
-            throw new RuntimeException("Usuario no encontrado.");
+            throw new RuntimeException("User not found.");
         }
         if (!user.getEmail().equals(email)) {
-            log.error("El correo electrónico no coincide para el usuario: {}", userName);
-            throw new RuntimeException("Correo electrónico incorrecto.");
+            throw new RuntimeException("Incorrect email.");
         }
         String newPassword = generateRandomPassword();
         user.setPassword(DigestUtils.md5Hex(newPassword));
         this.userRepository.save(user);
-        String logMessage = String.format("Contraseña reseteada para el usuario: %s. Nueva contraseña: %s", userName,
-                newPassword);
-        log.info(logMessage);
-        user.setMessage(logMessage);
-        return logMessage;
+        return "Password reset successfully. New password: " + newPassword;
     }
 
 }

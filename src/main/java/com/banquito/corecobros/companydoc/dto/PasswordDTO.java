@@ -8,8 +8,8 @@ import lombok.Value;
 public class PasswordDTO {
 
     private String user;
-    private String password;
     private String oldPassword;
     private String newPassword;
+    private String email;
 
 }

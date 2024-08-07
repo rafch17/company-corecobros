@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.banquito.corecobros.companydoc.dto.CompanyDTO;
+import com.banquito.corecobros.companydoc.dto.CompanyNameDTO;
+import com.banquito.corecobros.companydoc.dto.PasswordDTO;
 import com.banquito.corecobros.companydoc.dto.UserDTO;
 import com.banquito.corecobros.companydoc.model.User;
 import com.banquito.corecobros.companydoc.service.UserService;
@@ -45,25 +47,24 @@ public class UserController {
     @Operation(summary = "Get user by uniqueId", description = "Retrieve a user by its uniqueId")
     public ResponseEntity<UserDTO> getUserByUniqueId(@PathVariable String uniqueId) {
         UserDTO user = service.getUserByUniqueId(uniqueId);
-        if (user != null) {
-            return ResponseEntity.ok(user);
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
+        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/company-name/{user}")
     @Operation(summary = "Get company by user", description = "Retrieve a company by its user")
-    public ResponseEntity<String> getCompanyNameByUser(@PathVariable String user) {
+    public ResponseEntity<CompanyNameDTO> getCompanyNameByUser(@PathVariable String user) {
         try {
             String companyName = service.getCompanyNameByUser(user);
-            return ResponseEntity.ok(companyName);
+            CompanyNameDTO response = CompanyNameDTO.builder()
+                    .companyName(companyName)
+                    .build();
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
-    @PostMapping("/")
+    @PostMapping
     @Operation(summary = "Create a user", description = "Create a new user")
     public ResponseEntity<User> createUser(@RequestBody User userRequest) {
         try {
@@ -77,7 +78,7 @@ public class UserController {
                     userRequest.getUserType());
             return ResponseEntity.ok(createdUser);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -106,33 +107,32 @@ public class UserController {
             User loggedUser = service.login(dto);
             return ResponseEntity.ok(loggedUser);
         } catch (RuntimeException e) {
-            if ("Primera vez que inicia sesión. Debe cambiar su contraseña.".equals(e.getMessage())) {
+            if ("First login. Must change password.".equals(e.getMessage())) {
                 return ResponseEntity.status(403).body(null);
             }
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
     @PutMapping("/change-password")
     @Operation(summary = "Change Password", description = "Change password for a user")
-    public ResponseEntity<String> changePassword(@RequestParam String userName, @RequestParam String oldPassword,
-            @RequestParam String newPassword) {
+    public ResponseEntity<String> changePassword(@RequestBody PasswordDTO request) {
         try {
-            String message = this.service.changePassword(userName, oldPassword, newPassword);
+            String message = this.service.changePassword(request);
             return ResponseEntity.ok(message);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PutMapping("/reset-password")
     @Operation(summary = "Reset Password", description = "Reset password for a user")
-    public ResponseEntity<String> resetPassword(@RequestParam String userName, @RequestParam String email) {
+    public ResponseEntity<String> resetPassword(@RequestBody PasswordDTO request) {
         try {
-            String message = this.service.resetPassword(userName, email);
+            String message = this.service.resetPassword(request.getUser(), request.getEmail());
             return ResponseEntity.ok(message);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

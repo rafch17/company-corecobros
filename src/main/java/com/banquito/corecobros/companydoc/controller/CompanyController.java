@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.banquito.corecobros.companydoc.dto.CodeInternalAccountDTO;
 import com.banquito.corecobros.companydoc.dto.CompanyDTO;
 import com.banquito.corecobros.companydoc.model.Account;
 import com.banquito.corecobros.companydoc.model.Company;
@@ -52,40 +53,40 @@ public class CompanyController {
             CompanyDTO company = service.getCompanyByRuc(ruc);
             return ResponseEntity.ok(company);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
     @GetMapping("/name/{companyName}")
-    @Operation(summary = "Get company by companyName", description = "Retrieve a company by its companyName")
+    @Operation(summary = "Get company by companyName", description = "Retrieve companies by companyName")
     public ResponseEntity<List<CompanyDTO>> getCompanyByCompanyName(@PathVariable String companyName) {
         try {
             List<CompanyDTO> companies = service.getCompanyByCompanyName(companyName);
             return ResponseEntity.ok(companies);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
     @GetMapping("/commission/{commissionId}")
     @Operation(summary = "Get company by commissionId", description = "Retrieve a company by its commissionId")
-    public ResponseEntity<CompanyDTO> getCommissionIdByUniqueId(@PathVariable String commissionId) {
+    public ResponseEntity<CompanyDTO> getCommissionById(@PathVariable String commissionId) {
         try {
             CompanyDTO company = service.getCommissionById(commissionId);
             return ResponseEntity.ok(company);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
-    @PostMapping("/")
+    @PostMapping
     @Operation(summary = "Create a company", description = "Create a new company")
     public ResponseEntity<Company> createCompany(@RequestBody Company company) {
         try {
             Company createdCompany = this.service.create(company);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdCompany);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -101,27 +102,30 @@ public class CompanyController {
     }
 
     @GetMapping("/account/uniqueId/{uniqueId}")
-    @Operation(summary = "Get codeInternalAccount by uniqueId", description = "Retrieve a codeInternalAccount by its uniqueId")
-    public ResponseEntity<String> getCodeInternalAccountByUniqueId(@PathVariable String uniqueId) {
+    @Operation(summary = "Get codeInternalAccount by uniqueId", description = "Retrieve codeInternalAccount by its uniqueId")
+    public ResponseEntity<CodeInternalAccountDTO> getCodeInternalAccountByUniqueId(@PathVariable String uniqueId) {
         if (uniqueId == null || uniqueId.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("El uniqueId no puede estar vacío");
+            return ResponseEntity.badRequest().body(null);
         }
         try {
             String codeInternalAccount = this.service.getCodeInternalAccountByUniqueId(uniqueId);
-            return ResponseEntity.ok(codeInternalAccount);
+            CodeInternalAccountDTO response = CodeInternalAccountDTO.builder()
+                    .codeInternalAccount(codeInternalAccount)
+                    .build();
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
-    @GetMapping("/{companyId}/accounts-by-company")
+    @GetMapping("/{companyId}/accounts")
     @Operation(summary = "Get accounts by companyId", description = "Retrieve accounts by companyId")
     public ResponseEntity<List<Account>> getAccountsByCompanyId(@PathVariable String companyId) {
         try {
             List<Account> accounts = this.service.getAccountsByCompanyId(companyId);
             return ResponseEntity.ok(accounts);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -135,12 +139,12 @@ public class CompanyController {
             CompanyDTO company = this.service.getCompanyByCodeInternalAccount(codeInternalAccount);
             return ResponseEntity.ok(company);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
     @PostMapping("/{companyId}/account")
-    @Operation(summary = "Add an account by companyId", description = "Add a new account to company")
+    @Operation(summary = "Add an account to a company", description = "Add a new account to a company")
     public ResponseEntity<String> addAccountToCompany(@PathVariable String companyId, @RequestBody Account account) {
         String result = this.service.addAccountToCompany(companyId, account);
         if ("Cuenta añadida con éxito".equals(result)) {
@@ -161,15 +165,19 @@ public class CompanyController {
         }
     }
 
-    @GetMapping("/services-all/{companyId}")
+    @GetMapping("/{companyId}/services")
     @Operation(summary = "Get services by companyId", description = "Retrieve services by companyId")
     public ResponseEntity<List<Servicee>> getServicesByCompanyId(@PathVariable String companyId) {
-        List<Servicee> services = this.service.getServicesByCompanyId(companyId);
-        return ResponseEntity.ok(services);
+        try {
+            List<Servicee> services = this.service.getServicesByCompanyId(companyId);
+            return ResponseEntity.ok(services);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
-    @PostMapping("/{companyId}/service")
-    @Operation(summary = "Add a service by companyId", description = "Add a new service to company")
+    @PostMapping("/service/{companyId}")
+    @Operation(summary = "Add a service to a company", description = "Add a new service to a company")
     public ResponseEntity<String> addServiceToCompany(@PathVariable String companyId, @RequestBody Servicee servicee) {
         String result = this.service.addServiceToCompany(companyId, servicee);
         if ("Servicio añadido con éxito".equals(result)) {
@@ -186,10 +194,10 @@ public class CompanyController {
             return ResponseEntity.badRequest().body(null);
         }
         try {
-            CompanyDTO companies = this.service.getCompanyByServiceesName(name);
-            return ResponseEntity.ok(companies);
+            CompanyDTO company = this.service.getCompanyByServiceesName(name);
+            return ResponseEntity.ok(company);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
