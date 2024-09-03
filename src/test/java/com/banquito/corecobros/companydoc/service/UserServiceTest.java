@@ -21,7 +21,6 @@ import org.mockito.MockitoAnnotations;
 
 import com.banquito.corecobros.companydoc.dto.PasswordDTO;
 import com.banquito.corecobros.companydoc.dto.UserDTO;
-import com.banquito.corecobros.companydoc.model.Company;
 import com.banquito.corecobros.companydoc.model.User;
 import com.banquito.corecobros.companydoc.repository.CompanyRepository;
 import com.banquito.corecobros.companydoc.repository.UserRepository;
