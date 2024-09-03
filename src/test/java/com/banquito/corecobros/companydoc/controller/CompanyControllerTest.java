@@ -267,11 +267,9 @@ public class CompanyControllerTest {
 
                 List<Servicee> services = List.of(servicee);
 
-                // Configura el comportamiento del mock
                 when(companyService.getServicesByCompanyId(companyId))
                                 .thenReturn(services);
 
-                // Realiza la solicitud al endpoint
                 mockMvc.perform(get("/company-microservice/api/v1/companies/{companyId}/services", companyId))
                                 .andExpect(status().isOk())
                                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
