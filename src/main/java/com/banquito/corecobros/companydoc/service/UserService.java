@@ -15,6 +15,7 @@ import com.banquito.corecobros.companydoc.model.Company;
 import com.banquito.corecobros.companydoc.model.User;
 import com.banquito.corecobros.companydoc.repository.CompanyRepository;
 import com.banquito.corecobros.companydoc.repository.UserRepository;
+import com.banquito.corecobros.companydoc.util.jwt.JwtUtil;
 import com.banquito.corecobros.companydoc.util.mapper.UserMapper;
 import com.banquito.corecobros.companydoc.util.uniqueId.UniqueIdGeneration;
 
@@ -26,6 +27,9 @@ public class UserService {
 
     @Autowired
     private CompanyRepository companyRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     private final UserRepository userRepository;
     private final UserMapper mapper;
@@ -169,6 +173,43 @@ public class UserService {
         log.error("Error: {}", errorMessage);
         throw new RuntimeException(errorMessage);
     }
+
+    public User login2(User dto) {
+        String errorMessage = "Usuario o contraseña incorrecta";
+        log.info("Usuario: {}", dto);
+        if (dto.getUser() != null && dto.getPassword() != null && dto.getUser().length() > 3
+                && dto.getPassword().length() > 5) {
+            log.info("El usuario y contraseña coinciden");
+            User user = this.userRepository.findByUser(dto.getUser());
+            if (user != null) {
+                log.info("Usuario encontrado: {}", user);
+                String md5 = DigestUtils.md5Hex(dto.getPassword());
+                log.info("MD5 de la contraseña proporcionada: {}", md5);
+                if (user.getPassword().equals(md5)) {
+                    user.setLastConnection(LocalDateTime.now());
+                    if ("ACT".equals(user.getStatus())) {
+                        log.info("Usuario activo");
+                        if (user.isFirstLogin()) {
+                            errorMessage = "Primera vez que inicia sesión. Debe cambiar su contraseña.";
+                            log.info(errorMessage);
+                            throw new RuntimeException(errorMessage);
+                        }
+                        this.userRepository.save(user);
+
+                        // Generar y devolver el token JWT
+                        String token = jwtUtil.generateToken(user.getUser());
+                        user.setMessage("Bearer " + token);
+                        return user;
+                    } else {
+                        errorMessage = "Usuario no es activo";
+                    }
+                }
+            }
+        }
+        log.error("Error: {}", errorMessage);
+        throw new RuntimeException(errorMessage);
+    }
+    
 
     public String changePassword(String userName, String oldPassword, String newPassword) {
         User user = this.userRepository.findByUser(userName);

@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-    RequestMethod.PUT })
+        RequestMethod.PUT })
 @RestController
 @RequestMapping("/company-microservice/api/v1/users")
 @Tag(name = "User", description = "Endpoints for managing users")
@@ -113,13 +113,28 @@ public class UserController {
         }
     }
 
+    @PostMapping("/auth")
+    @Operation(summary = "auth user", description = "Authenticate user with credentials and return JWT")
+    public ResponseEntity<?> login2(@RequestBody User dto) {
+        try {
+            User loggedUser = service.login2(dto);
+            String token = loggedUser.getMessage(); // El token JWT está almacenado en el campo message
+            return ResponseEntity.ok().header("Authorization", token).body(loggedUser);
+        } catch (RuntimeException e) {
+            if ("Primera vez que inicia sesión. Debe cambiar su contraseña.".equals(e.getMessage())) {
+                return ResponseEntity.status(403).body(e.getMessage());
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PutMapping("/change-password")
     @Operation(summary = "Change Password", description = "Change password for a user")
     public ResponseEntity<String> changePassword(@RequestParam String userName, @RequestParam String oldPassword,
             @RequestParam String newPassword) {
         try {
             String message = this.service.changePassword(userName, oldPassword, newPassword);
-            return ResponseEntity.ok(message); 
+            return ResponseEntity.ok(message);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

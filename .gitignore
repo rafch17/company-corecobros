@@ -43,3 +43,5 @@ out/
 
 # Specific to the system
 .8.8/
+
+.fake
